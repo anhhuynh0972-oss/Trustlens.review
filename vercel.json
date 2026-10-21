@@ -6,26 +6,16 @@
     {
       "source": "/(.*)",
       "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        }
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
       ]
     }
   ],
   "functions": {
-    "api/tiktok-review.js": {
-      "maxDuration": 60
-    },
-    "api/analyze.js": {
-      "maxDuration": 30
-    },
-    "api/health.js": {
-      "maxDuration": 10
-    }
+    "api/tiktok-review.js": { "maxDuration": 60 },
+    "api/analyze.js": { "maxDuration": 60 },
+    "api/health.js": { "maxDuration": 10 }
   }
 }

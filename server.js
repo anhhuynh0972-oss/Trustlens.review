@@ -1,36 +1,59 @@
+// Local development server (Node 18+). Mirrors Vercel: serves the static site and routes /api/* to the
+// same serverless handlers. Only public files are served; .env, .git, api/ source etc. are never exposed.
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+
 const root = __dirname;
 const port = Number(process.env.PORT || 3000);
-const mime = {'.html':'text/html; charset=utf-8','.json':'application/json; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.md':'text/markdown; charset=utf-8'};
-function send(res,status,body,type='text/plain; charset=utf-8'){res.writeHead(status,{'Content-Type':type,'X-Content-Type-Options':'nosniff','Cache-Control':'no-store'});res.end(body);}
-function readBody(req,limit=2_000_000){return new Promise((resolve,reject)=>{let b='';req.on('data',c=>{b+=c;if(b.length>limit){reject(new Error('Request too large'));req.destroy();}});req.on('end',()=>resolve(b));req.on('error',reject);});}
-async function handleAnalyze(req,res){
- if(!process.env.GEMINI_API_KEY){return send(res,404,JSON.stringify({error:'Gemini is not configured; local analysis is available in the browser.'}),'application/json; charset=utf-8');}
- try{
-  const body=JSON.parse(await readBody(req));const reviews=Array.isArray(body.reviews)?body.reviews:[];
-  if(!reviews.length||reviews.length>500) return send(res,400,JSON.stringify({error:'Provide between 1 and 500 reviews.'}),'application/json; charset=utf-8');
-  const safeReviews=reviews.map(r=>({id:String(r.id||'').slice(0,100),text:String(r.text||'').slice(0,4000)})).filter(r=>r.id&&r.text);
-  const prompt=`You are TrustLens, an evidence-grounded review interpretation assistant. Return ONLY valid JSON with keys: summary (string), strengths (array of objects {title, evidence_review_ids}), weaknesses (array of objects {title, evidence_review_ids}), potential_concerns (array of objects {title, rationale, evidence_review_ids}), limitations (array of strings). Use only the supplied reviews. Do not invent text, counts, citations, seller details, or facts. Use cautious neutral language; repeated complaints are signals, not proof of fraud or safety hazards. Every evidence_review_ids value must exactly match a supplied review ID and directly support the claim. Do not calculate or report percentages. Mention uncertainty. Reviews JSON:\n${JSON.stringify(safeReviews)}`;
-  const endpoint='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+encodeURIComponent(process.env.GEMINI_API_KEY);
-  const upstream=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{responseMimeType:'application/json',temperature:0.1}})});
-  if(!upstream.ok){const t=await upstream.text();return send(res,502,JSON.stringify({error:'Gemini provider returned an error',detail:t.slice(0,500)}),'application/json; charset=utf-8');}
-  const data=await upstream.json();const text=data.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'';
-  let ai;try{ai=JSON.parse(text);}catch{return send(res,502,JSON.stringify({error:'Gemini returned invalid JSON'}),'application/json; charset=utf-8');}
-  if(typeof ai.summary!=='string'||!Array.isArray(ai.strengths)||!Array.isArray(ai.potential_concerns)||!Array.isArray(ai.limitations))return send(res,502,JSON.stringify({error:'Gemini response failed schema validation'}),'application/json; charset=utf-8');
-  const ids=new Set(safeReviews.map(r=>r.id));
-  for(const key of ['strengths','weaknesses','potential_concerns']){if(!Array.isArray(ai[key]))ai[key]=[];ai[key]=ai[key].map(x=>({...x,evidence_review_ids:Array.isArray(x.evidence_review_ids)?x.evidence_review_ids.filter(id=>ids.has(id)):[]})).filter(x=>x.evidence_review_ids.length);}
-  return send(res,200,JSON.stringify({ai}),'application/json; charset=utf-8');
- }catch(e){return send(res,500,JSON.stringify({error:'Analysis failed',detail:e.message}),'application/json; charset=utf-8');}
+const MAX_BODY = 1_000_000; // 1 MB
+const PUBLIC = [/^\/index\.html$/, /^\/app\/[a-z0-9_-]+\.js$/, /^\/data\/[a-z0-9_-]+\.json$/, /^\/lib\/[a-z0-9_-]+\.js$/, /^\/tests\/browser\.html$/, /^\/tests\/[a-z0-9_-]+\.js$/, /^\/favicon\.svg$/, /^\/assets\/[a-z0-9_-]+\.(jpg|png|webp)$/];
+const mime = { '.html': 'text/html; charset=utf-8', '.json': 'application/json; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp' };
+const routes = { '/api/analyze': './api/analyze.js', '/api/tiktok-review': './api/tiktok-review.js', '/api/health': './api/health.js' };
+
+// Load KEY=value pairs from a local .env without any dependency (values never logged).
+try {
+  for (const line of fs.readFileSync(path.join(root, '.env'), 'utf8').split(/\r?\n/)) {
+    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
+    if (m && !(m[1] in process.env)) process.env[m[1]] = m[2].replace(/^['"]|['"]$/g, '');
+  }
+} catch (e) { /* no .env file */ }
+
+function readJson(req) {
+  return new Promise((resolve, reject) => {
+    let size = 0; const chunks = [];
+    req.on('data', c => { size += c.length; if (size > MAX_BODY) { reject(Object.assign(new Error('too_large'), { status: 413 })); req.destroy(); } else chunks.push(c); });
+    req.on('end', () => { try { resolve(chunks.length ? JSON.parse(Buffer.concat(chunks).toString('utf8')) : {}); } catch (e) { reject(Object.assign(new Error('bad_json'), { status: 400 })); } });
+    req.on('error', reject);
+  });
 }
-const server=http.createServer(async(req,res)=>{
- const url=new URL(req.url,'http://localhost');
- if(req.method==='POST'&&url.pathname==='/api/analyze')return handleAnalyze(req,res);
- if(req.method!=='GET'&&req.method!=='HEAD')return send(res,405,'Method not allowed');
- let pathname=decodeURIComponent(url.pathname==='/'?'/index.html':url.pathname);
- const full=path.normalize(path.join(root,pathname));
- if(!full.startsWith(root))return send(res,403,'Forbidden');
- fs.readFile(full,(err,buf)=>{if(err)return send(res,404,'Not found');res.writeHead(200,{'Content-Type':mime[path.extname(full)]||'application/octet-stream','X-Content-Type-Options':'nosniff'});res.end(req.method==='HEAD'?undefined:buf);});
-});
-server.listen(port,'0.0.0.0',()=>console.log(`TrustLens running at http://localhost:${port}`));
+
+// Minimal Vercel-style response helpers.
+function wrap(res) {
+  res.status = code => { res.statusCode = code; return res; };
+  res.json = obj => { if (!res.getHeader('Content-Type')) res.setHeader('Content-Type', 'application/json; charset=utf-8'); res.end(JSON.stringify(obj)); return res; };
+  return res;
+}
+
+http.createServer(async (req, res) => {
+  wrap(res);
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  const url = new URL(req.url, 'http://localhost');
+  if (routes[url.pathname]) {
+    try {
+      req.body = req.method === 'POST' ? await readJson(req) : {};
+      return await require(routes[url.pathname])(req, res);
+    } catch (e) {
+      return res.status(e.status || 500).json({ error: e.status === 413 ? 'payload_too_large' : e.status === 400 ? 'bad_json' : 'server_error' });
+    }
+  }
+  if (req.method !== 'GET' && req.method !== 'HEAD') return res.status(405).json({ error: 'method_not_allowed' });
+  const pathname = url.pathname === '/' ? '/index.html' : url.pathname;
+  if (!PUBLIC.some(re => re.test(pathname))) { res.statusCode = 404; return res.end('Not found'); }
+  const full = path.join(root, pathname);
+  fs.readFile(full, (err, buf) => {
+    if (err) { res.statusCode = 404; return res.end('Not found'); }
+    res.setHeader('Content-Type', mime[path.extname(full)] || 'application/octet-stream');
+    res.end(req.method === 'HEAD' ? undefined : buf);
+  });
+}).listen(port, () => console.log(`TrustLens dev server: http://localhost:${port}`));

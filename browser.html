@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TrustLens tests</title>
+<style>body{font:14px/1.5 system-ui,sans-serif;margin:20px;color:#171717;background:#fff}li.passed{color:#11795a}li.failed{color:#a61d33}li.skipped{color:#85777b}code{font-size:12px}#frames iframe{border:1px solid #ddd;margin:4px;vertical-align:top}</style>
+</head>
+<body>
+<h1>TrustLens automated tests</h1>
+<p id="summary">Running…</p>
+<ol id="out"></ol>
+<div id="frames"></div>
+<script>window.process = { env: {} };</script>
+<script src="../lib/url.js"></script>
+<script src="../lib/retrieve.js"></script>
+<script src="../lib/providers.js"></script>
+<script src="../lib/analysis.js"></script>
+<script src="harness.js"></script>
+<script>
+// Load a CommonJS file (the real api/*.js sources) in the browser, mapping its requires to the lib globals.
+const LIB = { 'url.js': () => TL_url, 'retrieve.js': () => TL_retrieve, 'analysis.js': () => TL_analysis, 'providers.js': () => TL_providers };
+const cjsCache = {};
+async function TL_loadCjs(rel) {
+  if (cjsCache[rel]) return cjsCache[rel];
+  const src = await (await fetch('../' + rel, { cache: 'no-store' })).text();
+  const module = { exports: {} };
+  const req = p => { const k = p.split('/').pop(); if (LIB[k]) return LIB[k](); throw new Error('cannot require ' + p + ' in browser'); };
+  new Function('module', 'exports', 'require', 'process', src + '\n//# sourceURL=' + rel)(module, module.exports, req, window.process);
+  return (cjsCache[rel] = module.exports);
+}
+</script>
+<script src="unit.tests.js"></script>
+<script src="api.tests.js"></script>
+<script src="ui.tests.js"></script>
+<script>
+const out = document.getElementById('out');
+TL_test.run(t => !t.opts.live, r => {
+  const li = document.createElement('li'); li.className = r.status;
+  li.textContent = `${r.status.toUpperCase()}${r.mock ? ' [mock]' : ''} — ${r.name}${r.error ? ' — ' + r.error : ''}`;
+  out.appendChild(li);
+}).then(results => {
+  const c = s => results.filter(r => r.status === s).length;
+  document.getElementById('summary').textContent = `${c('passed')} passed, ${c('failed')} failed, ${c('skipped')} skipped`;
+  window.TL_RESULTS = results;
+});
+</script>
+</body>
+</html>

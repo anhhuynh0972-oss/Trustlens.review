@@ -1,75 +1,88 @@
-# TrustLens — TikTok Shop Review Analyzer (Bilingual + Gemini AI)
+# TrustLens — TikTok Shop review credibility assistant
 
-TrustLens helps shoppers inspect review evidence before buying. The interface defaults to English and includes a `VI | EN` toggle. When a supported AI request is made, Gemini is asked to interpret the supplied reviews in the currently selected language.
+TrustLens helps Vietnamese Gen Z (18–24) shoppers check TikTok Shop reviews before buying. Paste a product link, and TrustLens retrieves the real reviews through a licensed data provider. It analyses them with Google Gemini in batches and shows a summary, findings and potential red flags, each one linked to the original review excerpts and review IDs. The interface is bilingual (VI | EN).
 
-## What is included
+## Site sections
 
-- `index.html` — bilingual English/Vietnamese interface.
-- `api/analyze.js` — server-side Google Gemini interpretation. It does not expose the API key to the browser. AI observations must cite supplied review IDs; counts are computed locally from the actual review records.
-- `api/tiktok-review.js` — server-side review retrieval adapter. It supports the SocQ public-review API and an eligible official TikTok Research API token. It validates the URL format for the SocQ provider and never substitutes demo reviews for a pasted URL.
-- `data/` — clearly labeled synthetic demo datasets for presentation/testing only.
-- `vercel.json`, `package.json`, `.env.example` — deployment/configuration files.
+Hero → The Problem → Research & Evidence → How TrustLens Works (with technology stack and live service status) → Survey Insights → Core Features → Demo / Interactive Analysis → Roadmap → Evaluation & Expected Impact → FAQ → Footer & Sources. The analysis dashboard (results computed from the actual reviews only) opens from "Get Started", the demo cards or a product link.
 
-## Important: a TikTok link + Gemini key is not enough to fetch real reviews
+Survey figures come from the group's response spreadsheet, "TikTok Shop & Gen Z Consumer Behaviour" (61 responses, 10–14 Oct 2026), and were recomputed from the raw answers: Q10 43/61, Q9 29/61, Q11 31/61, Q9 25/61, Q9 24/61. The problem, roadmap and evaluation wording follows the group poster.
 
-Gemini analyzes review text; it is not the source of TikTok Shop customer reviews. To retrieve real reviews automatically, TrustLens needs an approved data connection. The included TikTok endpoint uses the official TikTok Research API and requires a valid `TIKTOK_RESEARCH_ACCESS_TOKEN` with the `research.data.basic` scope. TikTok's documented review endpoint returns reviews for products available for purchase in the EU; it does not guarantee access to Vietnam TikTok Shop products. If a Vietnam link is unsupported, the app explains the limitation and does not fabricate results.
+## The six-step workflow (dashboard)
 
-SocQ's documented product-review endpoint expects a supported TikTok Shop product PDP URL in `/shop/pdp/{id}` or `/shop/pdp/{slug}/{id}` form. Short links work only if they resolve to a supported PDP. Some Vietnam regional share links or older `/view/product/` URLs may not be accepted; the API will show an explicit error instead of pretending the link worked. If a provider returns no reviews, use review text you are authorized to use: paste one review per line or import CSV/JSON. Gemini can then summarize recurring positives, complaints, evidence IDs, limitations, and practical checks before purchase.
+1. **Submit**: a TikTok Shop product link, or reviews pasted or imported from CSV/JSON.
+2. **Retrieve**: the provider is paged with de-duplication; the page shows real progress and a complete/partial status. For pasted reviews this step is skipped.
+3. **Classify sentiment**: Gemini labels every review positive, neutral or negative, in batches. Percentages are computed by TrustLens.
+4. **Themes, complaints and red flags**: Gemini findings are merged across batches with counted supporting reviews and original excerpts, plus rule-based checks.
+5. **Structured report**: real statistics, findings with excerpts and IDs, and limitations. It can be copied or downloaded as .txt.
+6. **Decision summary**: an evidence label computed by a published counting rule (not by the AI), the strengths, complaints and points to check, and what the data cannot tell you. Gemini only explains that label; it never says "buy" or "don't buy".
 
-Official TikTok documentation: https://developers.tiktok.com/docs/en/research-api-specs-query-tiktok-shop-reviews
-Google Gemini API documentation: https://ai.google.dev/api/generate-content
+A tracker shows each step's real state. Demo products never call the API and stay rule-based.
 
-## Deploy to the existing Vercel project
+`GET /api/health?check=ai` verifies the Gemini key and model with Google's free model lookup. When AI fails, the API returns a specific code: `ai_auth`, `ai_model_unavailable`, `ai_rate_limited`, `ai_timeout` or `ai_invalid_output`.
 
-1. Extract this ZIP.
-2. Copy **the contents inside this folder** into the root of the existing GitHub repository `anhhuynh0972-oss/trustlens-review-analyzer`, keeping the folder structure. In particular, the root must contain `index.html`, `api/`, `data/`, `package.json`, and `vercel.json`.
-3. Confirm `api/analyze.js` and `api/tiktok-review.js` are inside the `api` folder—not beside `index.html`.
-4. Commit the changes to GitHub. Vercel should deploy the commit automatically.
-5. In Vercel → Project → Settings → Environment Variables, set `GEMINI_API_KEY` for Production (and Preview/Development if needed). Redeploy after changing environment variables.
-6. To enable official TikTok retrieval, set `TIKTOK_RESEARCH_ACCESS_TOKEN` only if TikTok has approved your access and scope. A Google Gemini key does not replace this token.
-7. Test the pasted-link workflow. If no TikTok token is configured, the endpoint should return a clear error rather than demo reviews.
+## Structure
 
-## Security
+| Path | Purpose |
+|---|---|
+| `index.html` | The site: landing page, research section, demo products and analysis dashboard. Includes the rule-based browser engine and the existing `data-i18n` VI/EN system. |
+| `app/live.js` | Live retrieval flow (progress, cancel, continue, retry), batched AI analysis, evidence rendering, CSV/JSON import. |
+| `app/liquid-hero.js` | WebGL2 liquid-particle hero artwork (ported from a React component by guglielmogiannattasio.it). The static image shows without WebGL2 or with reduced motion. |
+| `app/motion.js` | Scroll reveals, count-ups, active nav, progress bar. |
+| `assets/hero-art.jpg` | Hero artwork (cropped from the group's TrustLens visual). |
+| `app/i18n-extra.js` | VI/EN strings for the research section and live/AI UI, added to the existing dictionaries. |
+| `lib/url.js` | URL validation, product-ID extraction, and short-link resolution (TikTok hosts only, private IPs blocked). |
+| `lib/retrieve.js` | Pagination engine: page cap, loop and stall protection, de-duplication, retries, partial results, resume. |
+| `lib/providers.js` | Social Fetch and SocQ adapters, following each provider's documented API. |
+| `lib/analysis.js` | Review normalisation, batching, AI output validation, merging, data signals. |
+| `api/tiktok-review.js` | `POST` endpoint that retrieves reviews (server-side keys). |
+| `api/analyze.js` | `POST` endpoint for Gemini analysis (`mode: "batch"` or `"summary"`). |
+| `api/health.js` | `GET` endpoint reporting which settings are configured. Returns booleans only. |
+| `data/` | Synthetic demo datasets, labelled as synthetic. |
+| `tests/` | Automated tests (`npm test` runs them in Node; `tests/browser.html` runs everything, UI tests included, in a browser). |
 
-- Never paste API keys into `index.html` or commit real secrets to GitHub.
-- `.env.example` contains placeholders only. Keep your real `.env` file out of version control.
-- Only upload/import review text you are authorized to use; consider privacy before sending text to an AI provider.
+## Environment variables (Vercel → Project → Settings → Environment Variables → Production, then **Redeploy**)
+
+| Name | Required | Notes |
+|---|---|---|
+| `GEMINI_API_KEY` | yes, for AI | Google AI Studio key. Without it, only rule-based checks run, and the page says so. |
+| `SOCIALFETCH_API_KEY` | one provider is required | Social Fetch (`x-api-key`). Documents `region=VN`. Costs 1 credit per page of reviews. |
+| `SOCQ_API_KEY` | alternative provider | SocQ (Bearer). Async tasks, billed per saved review. VN coverage is not documented. |
+| `REVIEW_PROVIDER` | optional | `socialfetch` or `socq`. Picks one when both keys are set. |
+| `REVIEW_REGION` | optional | Default `VN`. |
+| `REVIEW_MAX_PAGES` | optional | Safe page cap per product. Default 20, hard maximum 200. Use 2 for the first live test. |
+| `SOCQ_RESULTS_LIMIT` | optional | SocQ only. 20–2000, default 500. |
+| `GEMINI_MODEL` | optional | Default `gemini-2.5-flash`. |
+
+Keys never reach the browser. `.env.example` contains placeholders only. Keep your `.env` out of git; `.gitignore` already excludes it.
+
+## Honesty rules built into the code
+
+- Demo data is never substituted for live data. Without a configured provider, the endpoint returns `503 provider_not_configured`.
+- A result is marked "complete" only when the provider's pagination reports there are no more pages. Otherwise it is "partial", with the stop reason: page cap, rate limit, credits exhausted, stall or loop, timeout, or user cancellation.
+- Counts come from the actual records. The figure "reported by source" is the provider's own number: the product's total for Social Fetch, the collected count for SocQ.
+- AI coverage is shown as analysed/retrieved. Batches that fail are reported, and can be retried.
+- AI output is schema-validated. Any review ID the model cites that wasn't in the batch is dropped. Counts are computed from real IDs, never by the model.
+- Seller indicators use only fields the source returns. There is no invented trust score.
+
+## Tests
+
+```bash
+npm test
+```
+
+This runs in Node 18+. Tests marked `[mock]` use mocked provider and AI responses. They prove the logic, not that live data is available. Open `tests/browser.html` through any static server to also run the UI tests: language toggle, progress states, and no overflow at 360 px. After deploying:
+
+```bash
+npm run test:production -- https://YOUR-DOMAIN.vercel.app
+```
+
+The live test (real provider; uses credits) should start with `REVIEW_MAX_PAGES=2`:
+
+```bash
+npm run test:live -- https://YOUR-DOMAIN.vercel.app "https://www.tiktok.com/shop/pdp/<slug>/<product-id>"
+```
 
 ## Local development
 
-Use Vercel Functions locally so `/api/*` routes work:
-
-```bash
-npx vercel dev
-```
-
-`node server.js` serves the basic static/local app but does not reproduce every Vercel serverless route.
-
-## What TrustLens does not claim
-
-- It does not guarantee that arbitrary Vietnam TikTok Shop URLs can be fetched.
-- It does not invent customer feedback when a source is unavailable.
-- It does not prove a review is fake or a seller is fraudulent. It highlights patterns and evidence that a shopper should inspect.
-
-
-## Automatic public-review retrieval (optional provider)
-
-TrustLens supports the SocQ TikTok Shop Product Reviews API through the server-side `SOCQ_API_KEY` environment variable. The integration submits the product URL, polls the provider task, and reads available result pages. Provider usage may be paid. Product/region coverage is controlled by the provider; setting `SOCQ_REGION=VN` requests Vietnam but does not guarantee coverage. Never put this key in `index.html` or commit it to GitHub.
-
-Configure these in Vercel Project Settings → Environment Variables, then redeploy:
-
-- `GEMINI_API_KEY` — enables Gemini AI interpretation.
-- `SOCQ_API_KEY` — enables the third-party public review provider.
-- `SOCQ_REGION` — optional; defaults to `VN`.
-- `SOCQ_RESULTS_LIMIT` — optional; defaults to `100`.
-- `TIKTOK_RESEARCH_ACCESS_TOKEN` — optional fallback for approved Research API access; official review data has eligibility restrictions and should not be assumed to support Vietnam.
-
-## Deployment verification
-
-`GET /api/health` reports whether the required environment variables are present; it does not expose their values and is not a live provider connectivity check. After deploying, run:
-
-```bash
-npm run test:production -- https://YOUR-VERCEL-DOMAIN.vercel.app
-```
-
-The smoke test checks the homepage, language-toggle markup, health endpoint, and API method handling. Then run a real provider test with a specific product URL (may consume paid credits): `npm run test:product-link -- https://YOUR-VERCEL-DOMAIN.vercel.app "https://www.tiktok.com/shop/pdp/product-name/1234567890123456789"`. Confirm the result is labeled as provider data, source reviews are displayed, and Gemini analysis works in the browser. If provider coverage or credentials are missing, the app must show an error instead of fabricated reviews. Neither mocked tests nor the health endpoint certify that a specific Vietnam product is supported.
+`node server.js` serves the site and the same `/api/*` handlers. It reads `.env` if present and serves only public files.

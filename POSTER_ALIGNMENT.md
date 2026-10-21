@@ -8,12 +8,8 @@ This version follows the poster's stated concept and core features:
 
 It also includes the six-step workflow (Select → Analyse → Identify → Summarise → Evaluate → Decide) and the proposed stack (AI & NLP, Data Analytics, Transparency Signals).
 
-## Important source/data limitation
-- Sample datasets are synthetic and only for demo mode. They are explicitly labeled as synthetic.
-- A real TikTok Shop URL does not fall back to sample data.
-- TikTok Research API requires approved access (`research.data.basic`) and its documented Shop review records cover products available for purchase in the EU; Vietnam availability is not guaranteed.
-- Product image, price and seller data are shown only if the configured source actually returns them. The current review endpoint may return only product name and review fields.
-- `GEMINI_API_KEY` enables server-side AI interpretation. Without it, analysis uses transparent local heuristics and should not be described as full AI analysis.
-
-## Deploy
-Upload the contents of this folder to the root of the existing GitHub repository, keeping `api/`, `data/`, `index.html`, `vercel.json`, and `package.json` at repository root. Configure environment variables in Vercel, then redeploy. See `VERCEL_DEPLOY.md`.
+## Data sources
+- Product links: real reviews via the configured provider (Social Fetch or SocQ), retrieved server-side with pagination, de-duplication and honest complete/partial status. Never replaced with demo data.
+- Demo products and the three synthetic datasets in `data/` are labelled as demo/synthetic.
+- Seller indicators appear only for fields the source returns; no invented trust score.
+- See README.md for setup, environment variables and deployment.
