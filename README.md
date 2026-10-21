@@ -23,22 +23,24 @@ A tracker shows each step's real state. Demo products never call the API and sta
 
 ## Structure
 
+The layout is deliberately flat: GitHub's web uploader drops folders, so every public file lives in the repository root. Only `api/` (the Vercel functions) is a folder; upload its three files from inside the `api` folder on GitHub.
+
 | Path | Purpose |
 |---|---|
 | `index.html` | The site: landing page, research section, demo products and analysis dashboard. Includes the rule-based browser engine and the existing `data-i18n` VI/EN system. |
-| `app/live.js` | Live retrieval flow (progress, cancel, continue, retry), batched AI analysis, evidence rendering, CSV/JSON import. |
-| `app/liquid-hero.js` | WebGL2 liquid-particle hero artwork (ported from a React component by guglielmogiannattasio.it). The static image shows without WebGL2 or with reduced motion. |
-| `app/motion.js` | Scroll reveals, count-ups, active nav, progress bar. |
-| `assets/hero-art.jpg` | Hero artwork (cropped from the group's TrustLens visual). |
-| `app/i18n-extra.js` | VI/EN strings for the research section and live/AI UI, added to the existing dictionaries. |
-| `lib/url.js` | URL validation, product-ID extraction, and short-link resolution (TikTok hosts only, private IPs blocked). |
-| `lib/retrieve.js` | Pagination engine: page cap, loop and stall protection, de-duplication, retries, partial results, resume. |
-| `lib/providers.js` | Social Fetch and SocQ adapters, following each provider's documented API. |
-| `lib/analysis.js` | Review normalisation, batching, AI output validation, merging, data signals. |
+| `live.js` | Live retrieval flow (progress, cancel, continue, retry), batched AI analysis, evidence rendering, CSV/JSON import. |
+| `liquid-hero.js` | WebGL2 liquid-particle hero artwork (ported from a React component by guglielmogiannattasio.it). The static image shows without WebGL2 or with reduced motion. |
+| `motion.js` | Scroll reveals, count-ups, active nav, progress bar. |
+| `hero-art.jpg` | Hero artwork (cropped from the group's TrustLens visual). |
+| `i18n-extra.js` | VI/EN strings for the research section and live/AI UI, added to the existing dictionaries. |
+| `url.js` | URL validation, product-ID extraction, and short-link resolution (TikTok hosts only, private IPs blocked). |
+| `retrieve.js` | Pagination engine: page cap, loop and stall protection, de-duplication, retries, partial results, resume. |
+| `providers.js` | Social Fetch and SocQ adapters, following each provider's documented API. |
+| `analysis.js` | Review normalisation, batching, AI output validation, merging, data signals. |
 | `api/tiktok-review.js` | `POST` endpoint that retrieves reviews (server-side keys). |
 | `api/analyze.js` | `POST` endpoint for Gemini analysis (`mode: "batch"` or `"summary"`). |
 | `api/health.js` | `GET` endpoint reporting which settings are configured. Returns booleans only. |
-| `data/` | Synthetic demo datasets, labelled as synthetic. |
+| `*.json` (demo) | Synthetic demo datasets, labelled as synthetic. |
 | `tests/` | Automated tests (`npm test` runs them in Node; `tests/browser.html` runs everything, UI tests included, in a browser). |
 
 ## Environment variables (Vercel → Project → Settings → Environment Variables → Production, then **Redeploy**)

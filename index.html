@@ -406,7 +406,7 @@ mark.hn { background: var(--neg-bg); color: var(--neg); border-radius: 4px; padd
 .toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px); background: var(--ink); color: var(--white); padding: .7rem 1.1rem; border-radius: 999px; font-size: .88rem; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease; z-index: 80; max-width: calc(100% - 32px); }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
-/* Live retrieval + AI evidence (app/live.js) */
+/* Live retrieval + AI evidence (live.js) */
 .pill-live { background: var(--pos-bg); color: var(--pos); }
 .live-line { display: flex; align-items: center; gap: .55rem; color: var(--ink-2); font-weight: 600; margin: .2rem 0 .7rem; overflow-wrap: anywhere; }
 .spin { width: 16px; height: 16px; flex: none; border-radius: 50%; border: 2.5px solid var(--pink); border-top-color: var(--red); animation: tlspin .8s linear infinite; }
@@ -494,7 +494,7 @@ mark.hn { background: var(--neg-bg); color: var(--neg); border-radius: 4px; padd
 @media (max-width: 640px) { .prob-grid, .sv-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 460px) { .prob-grid, .sv-grid, .stack-grid, .ev2-grid { grid-template-columns: minmax(0, 1fr); } }
 
-/* ================= Motion (app/motion.js adds html.motion only when motion is allowed) ================= */
+/* ================= Motion (motion.js adds html.motion only when motion is allowed) ================= */
 :root { --ease: cubic-bezier(.16, 1, .3, 1); }
 .btn { transition: transform .35s var(--ease), box-shadow .35s var(--ease), background-color .25s, border-color .25s, color .25s; will-change: transform; }
 .btn:active { transform: scale(.97); transition-duration: .1s; }
@@ -687,7 +687,7 @@ mark.hn { background: var(--neg-bg); color: var(--neg); border-radius: 4px; padd
       </div>
 
       <div class="hero-art">
-        <img class="hero-art-img" src="assets/hero-art.jpg" width="640" height="941" alt="Illustration: a TikTok Shop product page on a phone with buyer reviews, in a pink and black collage" data-i18n-alt="art.alt">
+        <img class="hero-art-img" src="hero-art.jpg" width="640" height="941" alt="Illustration: a TikTok Shop product page on a phone with buyer reviews, in a pink and black collage" data-i18n-alt="art.alt">
         <span class="pill art-tag" data-i18n="art.tag">Illustrative artwork</span>
         <p class="hero-hint" aria-hidden="true" data-i18n="art.hint">Move across the artwork</p>
       </div>
@@ -1922,12 +1922,12 @@ applyLang();
 if (location.hash === '#dashboard') showView('dashboard');
 else if (location.hash && document.getElementById(location.hash.slice(1))) showView(location.hash.slice(1));
 </script>
-<script src="lib/retrieve.js"></script>
-<script src="lib/analysis.js"></script>
-<script src="app/i18n-extra.js"></script>
-<script src="app/live.js"></script>
-<script src="app/motion.js"></script>
-<script src="app/liquid-hero.js"></script>
+<script src="retrieve.js"></script>
+<script src="analysis.js"></script>
+<script src="i18n-extra.js"></script>
+<script src="live.js"></script>
+<script src="motion.js"></script>
+<script src="liquid-hero.js"></script>
 <script>
   // Liquid particle artwork; the static image stays if WebGL2 is unavailable or motion is reduced.
   if (window.TL_liquidHero) TL_liquidHero.mount({ hero: document.getElementById('home'), art: document.querySelector('.hero-art'), img: document.querySelector('.hero-art-img'), background: '#050505', imageBackground: '#050505' });

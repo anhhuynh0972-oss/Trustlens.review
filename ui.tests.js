@@ -428,7 +428,7 @@
   test('hero: without WebGL2 or with reduced motion the static artwork stays and no canvas is left behind', async a => {
     const p = await openPage(Math.min(400, innerWidth - 40), () => json(503, {}));
     try {
-      const mk = () => { const h = p.d.createElement('section'); h.innerHTML = '<div class="hero-art"><img class="hero-art-img" src="assets/hero-art.jpg"></div>'; p.d.body.appendChild(h); return h; };
+      const mk = () => { const h = p.d.createElement('section'); h.innerHTML = '<div class="hero-art"><img class="hero-art-img" src="hero-art.jpg"></div>'; p.d.body.appendChild(h); return h; };
       const proto = p.w.HTMLCanvasElement.prototype, orig = proto.getContext;
       proto.getContext = function (type) { return type === 'webgl2' ? null : orig.apply(this, arguments); };
       let h = mk();

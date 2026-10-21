@@ -1,10 +1,10 @@
 // POST /api/tiktok-review — retrieve real TikTok Shop reviews through the configured provider.
 // One call fetches as many pages as fit in the time budget, then returns a resume token so the browser
 // can continue. Never substitutes demo data, never scrapes TikTok directly, never exposes provider keys.
-const { normalizeProductUrl, UrlError } = require('../lib/url.js');
-const { paginate, ProviderError } = require('../lib/retrieve.js');
-const { selectProvider } = require('../lib/providers.js');
-const { normalizeReview } = require('../lib/analysis.js');
+const { normalizeProductUrl, UrlError } = require('../url.js');
+const { paginate, ProviderError } = require('../retrieve.js');
+const { selectProvider } = require('../providers.js');
+const { normalizeReview } = require('../analysis.js');
 
 const CALL_BUDGET_MS = 40000; // Vercel maxDuration is 60 s; leave headroom
 const HARD_MAX_PAGES = 200;

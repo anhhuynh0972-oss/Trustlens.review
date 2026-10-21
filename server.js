@@ -7,7 +7,8 @@ const path = require('path');
 const root = __dirname;
 const port = Number(process.env.PORT || 3000);
 const MAX_BODY = 1_000_000; // 1 MB
-const PUBLIC = [/^\/index\.html$/, /^\/app\/[a-z0-9_-]+\.js$/, /^\/data\/[a-z0-9_-]+\.json$/, /^\/lib\/[a-z0-9_-]+\.js$/, /^\/tests\/browser\.html$/, /^\/tests\/[a-z0-9_-]+\.js$/, /^\/favicon\.svg$/, /^\/assets\/[a-z0-9_-]+\.(jpg|png|webp)$/];
+const PRIVATE = /^\/(server\.js|package\.json)$/;
+const PUBLIC = [/^\/index\.html$/, /^\/[a-z0-9_-]+\.(js|json|jpg)$/, /^\/tests\/browser\.html$/, /^\/tests\/[a-z0-9_-]+\.js$/, /^\/favicon\.svg$/, /^\/assets\/[a-z0-9_-]+\.(jpg|png|webp)$/];
 const mime = { '.html': 'text/html; charset=utf-8', '.json': 'application/json; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp' };
 const routes = { '/api/analyze': './api/analyze.js', '/api/tiktok-review': './api/tiktok-review.js', '/api/health': './api/health.js' };
 
@@ -49,7 +50,7 @@ http.createServer(async (req, res) => {
   }
   if (req.method !== 'GET' && req.method !== 'HEAD') return res.status(405).json({ error: 'method_not_allowed' });
   const pathname = url.pathname === '/' ? '/index.html' : url.pathname;
-  if (!PUBLIC.some(re => re.test(pathname))) { res.statusCode = 404; return res.end('Not found'); }
+  if (PRIVATE.test(pathname) || !PUBLIC.some(re => re.test(pathname))) { res.statusCode = 404; return res.end('Not found'); }
   const full = path.join(root, pathname);
   fs.readFile(full, (err, buf) => {
     if (err) { res.statusCode = 404; return res.end('Not found'); }

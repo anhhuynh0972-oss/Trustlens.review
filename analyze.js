@@ -2,7 +2,7 @@
 //   mode "batch":   analyse one batch of normalized reviews -> validated findings + per-review sentiment
 //   mode "summary": write a short summary from already-merged, already-counted findings
 // The browser splits the full dataset into batches so every retrieved review is analysed.
-const { BATCH_SCHEMA, validateBatchResult, CATEGORIES } = require('../lib/analysis.js');
+const { BATCH_SCHEMA, validateBatchResult, CATEGORIES } = require('../analysis.js');
 
 const MAX_BATCH_REVIEWS = 100;
 const MAX_BATCH_CHARS = 60000;

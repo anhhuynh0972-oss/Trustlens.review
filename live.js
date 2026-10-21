@@ -631,7 +631,7 @@
 
   // ---------- Keep the original synthetic sample datasets from data/ available as demos ----------
   Promise.all(['bluetooth_headphones_x', 'bluetooth_headphones_x_charging_issue', 'matte_lip_cream_y'].map(id =>
-    fetch('data/' + id + '.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null))).then(list => {
+    fetch(id + '.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null))).then(list => {
     list.filter(Boolean).forEach(ds => {
       if (DEMOS.some(d => d.id === ds.id)) return;
       SVG[ds.id] = SVG.generic;

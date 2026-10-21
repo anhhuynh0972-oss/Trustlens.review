@@ -13,10 +13,10 @@ async function check(name, fn) {
   await check('homepage responds with HTML', async () => {
     const r = await fetch(base, { signal: AbortSignal.timeout(15000) });
     const t = await r.text();
-    if (!r.ok || !t.includes('TrustLens') || !t.includes('data-lang="vi"') || !t.includes('app/live.js')) throw new Error(`HTTP ${r.status}; expected the current TrustLens HTML with the VI/EN toggle`);
+    if (!r.ok || !t.includes('TrustLens') || !t.includes('data-lang="vi"') || !t.includes('live.js')) throw new Error(`HTTP ${r.status}; expected the current TrustLens HTML with the VI/EN toggle`);
   });
   await check('demo sample datasets and client scripts are served', async () => {
-    for (const path of ['data/bluetooth_headphones_x.json', 'lib/analysis.js', 'app/live.js', 'app/i18n-extra.js']) {
+    for (const path of ['bluetooth_headphones_x.json', 'analysis.js', 'live.js', 'i18n-extra.js', 'liquid-hero.js', 'hero-art.jpg']) {
       const r = await fetch(`${base}/${path}`, { signal: AbortSignal.timeout(10000) });
       if (!r.ok) throw new Error(`${path} returned HTTP ${r.status}`);
     }

@@ -2,9 +2,9 @@
 (function () {
   const node = typeof module === 'object' && module.exports;
   const H = node ? require('./harness.js') : TL_test;
-  const U = node ? require('../lib/url.js') : TL_url;
-  const R = node ? require('../lib/retrieve.js') : TL_retrieve;
-  const A = node ? require('../lib/analysis.js') : TL_analysis;
+  const U = node ? require('../url.js') : TL_url;
+  const R = node ? require('../retrieve.js') : TL_retrieve;
+  const A = node ? require('../analysis.js') : TL_analysis;
   const { test } = H;
   const PID = '1729384756473829104';
 
