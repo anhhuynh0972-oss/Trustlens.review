@@ -1,0 +1,296 @@
+{
+  "id": "bluetooth_headphones_x",
+  "name": "Bluetooth Headphones X",
+  "kind": "synthetic_demo",
+  "description": "Positive example: clear sound and comfortable fit; one minor delivery-delay mention.",
+  "reviews": [
+    {
+      "id": "BH-001",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The sound is clear and balanced, and the fit stays comfortable even after a long playlist.",
+      "source_url": null
+    },
+    {
+      "id": "BH-002",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Clear sound for podcasts and the ear cups feel comfortable for daily use.",
+      "source_url": null
+    },
+    {
+      "id": "BH-003",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "I wore these for two hours and they stayed comfortable; vocals sound crisp.",
+      "source_url": null
+    },
+    {
+      "id": "BH-004",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Good sound clarity and a comfortable fit for commuting.",
+      "source_url": null
+    },
+    {
+      "id": "BH-005",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The audio is clear at normal volume and the padding feels soft.",
+      "source_url": null
+    },
+    {
+      "id": "BH-006",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The sound is clear and balanced, and the fit stays comfortable even after a long playlist.",
+      "source_url": null
+    },
+    {
+      "id": "BH-007",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Clear sound for podcasts and the ear cups feel comfortable for daily use.",
+      "source_url": null
+    },
+    {
+      "id": "BH-008",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "I wore these for two hours and they stayed comfortable; vocals sound crisp.",
+      "source_url": null
+    },
+    {
+      "id": "BH-009",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Good sound clarity and a comfortable fit for commuting.",
+      "source_url": null
+    },
+    {
+      "id": "BH-010",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The audio is clear at normal volume and the padding feels soft.",
+      "source_url": null
+    },
+    {
+      "id": "BH-011",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The sound is clear and balanced, and the fit stays comfortable even after a long playlist.",
+      "source_url": null
+    },
+    {
+      "id": "BH-012",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Sound is clear and the fit is comfortable, but delivery arrived two days later than expected.",
+      "source_url": null
+    },
+    {
+      "id": "BH-013",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "I wore these for two hours and they stayed comfortable; vocals sound crisp.",
+      "source_url": null
+    },
+    {
+      "id": "BH-014",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Good sound clarity and a comfortable fit for commuting.",
+      "source_url": null
+    },
+    {
+      "id": "BH-015",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The audio is clear at normal volume and the padding feels soft.",
+      "source_url": null
+    },
+    {
+      "id": "BH-016",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The sound is clear and balanced, and the fit stays comfortable even after a long playlist.",
+      "source_url": null
+    },
+    {
+      "id": "BH-017",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Clear sound for podcasts and the ear cups feel comfortable for daily use.",
+      "source_url": null
+    },
+    {
+      "id": "BH-018",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "I wore these for two hours and they stayed comfortable; vocals sound crisp.",
+      "source_url": null
+    },
+    {
+      "id": "BH-019",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Good sound clarity and a comfortable fit for commuting.",
+      "source_url": null
+    },
+    {
+      "id": "BH-020",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The audio is clear at normal volume and the padding feels soft.",
+      "source_url": null
+    },
+    {
+      "id": "BH-021",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The sound is clear and balanced, and the fit stays comfortable even after a long playlist.",
+      "source_url": null
+    },
+    {
+      "id": "BH-022",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Clear sound for podcasts and the ear cups feel comfortable for daily use.",
+      "source_url": null
+    },
+    {
+      "id": "BH-023",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "I wore these for two hours and they stayed comfortable; vocals sound crisp.",
+      "source_url": null
+    },
+    {
+      "id": "BH-024",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Good sound clarity and a comfortable fit for commuting.",
+      "source_url": null
+    },
+    {
+      "id": "BH-025",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The audio is clear at normal volume and the padding feels soft.",
+      "source_url": null
+    },
+    {
+      "id": "BH-026",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The sound is clear and balanced, and the fit stays comfortable even after a long playlist.",
+      "source_url": null
+    },
+    {
+      "id": "BH-027",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Clear sound for podcasts and the ear cups feel comfortable for daily use.",
+      "source_url": null
+    },
+    {
+      "id": "BH-028",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "I wore these for two hours and they stayed comfortable; vocals sound crisp.",
+      "source_url": null
+    },
+    {
+      "id": "BH-029",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Good sound clarity and a comfortable fit for commuting.",
+      "source_url": null
+    },
+    {
+      "id": "BH-030",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The audio is clear at normal volume and the padding feels soft.",
+      "source_url": null
+    },
+    {
+      "id": "BH-031",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The sound is clear and balanced, and the fit stays comfortable even after a long playlist.",
+      "source_url": null
+    },
+    {
+      "id": "BH-032",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Clear sound for podcasts and the ear cups feel comfortable for daily use.",
+      "source_url": null
+    },
+    {
+      "id": "BH-033",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "I wore these for two hours and they stayed comfortable; vocals sound crisp.",
+      "source_url": null
+    },
+    {
+      "id": "BH-034",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Good sound clarity and a comfortable fit for commuting.",
+      "source_url": null
+    },
+    {
+      "id": "BH-035",
+      "rating": 4,
+      "sentiment": "positive",
+      "text": "The audio is clear at normal volume and the padding feels soft.",
+      "source_url": null
+    },
+    {
+      "id": "BH-036",
+      "rating": 4,
+      "sentiment": "positive",
+      "text": "The sound is clear and balanced, and the fit stays comfortable even after a long playlist.",
+      "source_url": null
+    },
+    {
+      "id": "BH-037",
+      "rating": 3,
+      "sentiment": "neutral",
+      "text": "The headphones are okay overall; sound is acceptable, though nothing stands out.",
+      "source_url": null
+    },
+    {
+      "id": "BH-038",
+      "rating": 3,
+      "sentiment": "neutral",
+      "text": "The headphones are okay overall; sound is acceptable, though nothing stands out.",
+      "source_url": null
+    },
+    {
+      "id": "BH-039",
+      "rating": 2,
+      "sentiment": "negative",
+      "text": "The package arrived later than the estimate, but the headphones work fine.",
+      "source_url": null
+    },
+    {
+      "id": "BH-040",
+      "rating": 2,
+      "sentiment": "negative",
+      "text": "I found the fit less comfortable than expected and the sound was not as clear as I hoped.",
+      "source_url": null
+    }
+  ],
+  "expected_review_count": 40,
+  "seller": null,
+  "expected_rating_average": 4.7,
+  "sentiment_counts": {
+    "positive": 36,
+    "neutral": 2,
+    "negative": 2
+  }
+}

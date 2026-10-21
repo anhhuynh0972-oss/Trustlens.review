@@ -1,0 +1,296 @@
+{
+  "id": "bluetooth_headphones_x_charging_issue",
+  "name": "Bluetooth Headphones X — recurring charging issue",
+  "kind": "synthetic_demo",
+  "description": "Contrast example: repeated charging and battery complaints in the synthetic sample.",
+  "reviews": [
+    {
+      "id": "BH-I-001",
+      "rating": 4,
+      "sentiment": "negative",
+      "text": "The headphones stopped charging after three days of use.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-002",
+      "rating": 4,
+      "sentiment": "negative",
+      "text": "After a few days, the device would not charge even with the original cable.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-003",
+      "rating": 4,
+      "sentiment": "negative",
+      "text": "Charging stopped working on day four, so I could not recharge the headphones.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-004",
+      "rating": 4,
+      "sentiment": "negative",
+      "text": "The headphones failed to charge after several days, despite trying another outlet.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-005",
+      "rating": 4,
+      "sentiment": "negative",
+      "text": "It charged at first, then stopped charging after a few days.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-006",
+      "rating": 4,
+      "sentiment": "negative",
+      "text": "After three days the charging indicator no longer came on.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-007",
+      "rating": 4,
+      "sentiment": "negative",
+      "text": "The device would not take a charge after using it for a few days.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-008",
+      "rating": 4,
+      "sentiment": "negative",
+      "text": "A few days after delivery, the headphones stopped charging.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-009",
+      "rating": 4,
+      "sentiment": "negative",
+      "text": "Charging failed after a short period of use—around four days.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-010",
+      "rating": 4,
+      "sentiment": "negative",
+      "text": "It worked for a few days, then would not charge anymore.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-011",
+      "rating": 4,
+      "sentiment": "neutral",
+      "text": "The battery drains very quickly, even after a full charge.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-012",
+      "rating": 4,
+      "sentiment": "neutral",
+      "text": "Battery life drops fast; I need to recharge much sooner than expected.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-013",
+      "rating": 4,
+      "sentiment": "neutral",
+      "text": "The battery drains rapidly during ordinary listening.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-014",
+      "rating": 4,
+      "sentiment": "neutral",
+      "text": "Charging works only sometimes; I have to reconnect the cable to get it started.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-015",
+      "rating": 4,
+      "sentiment": "neutral",
+      "text": "The charging connection is intermittent and does not work every time.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-016",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Clear sound with balanced vocals; the ear cups are comfortable for long listening.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-017",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Sound quality is crisp and the fit feels comfortable during my commute.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-018",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Comfortable padding and clear audio for podcasts.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-019",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The headphones sound good and do not feel heavy.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-020",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "I like the clear sound and comfortable fit.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-021",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Clear sound with balanced vocals; the ear cups are comfortable for long listening.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-022",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Sound quality is crisp and the fit feels comfortable during my commute.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-023",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Comfortable padding and clear audio for podcasts.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-024",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The headphones sound good and do not feel heavy.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-025",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "I like the clear sound and comfortable fit.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-026",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Clear sound with balanced vocals; the ear cups are comfortable for long listening.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-027",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Sound quality is crisp and the fit feels comfortable during my commute.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-028",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Comfortable padding and clear audio for podcasts.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-029",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The headphones sound good and do not feel heavy.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-030",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "I like the clear sound and comfortable fit.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-031",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Clear sound with balanced vocals; the ear cups are comfortable for long listening.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-032",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Sound quality is crisp and the fit feels comfortable during my commute.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-033",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Comfortable padding and clear audio for podcasts.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-034",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The headphones sound good and do not feel heavy.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-035",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "I like the clear sound and comfortable fit.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-036",
+      "rating": 4,
+      "sentiment": "positive",
+      "text": "Clear sound with balanced vocals; the ear cups are comfortable for long listening.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-037",
+      "rating": 4,
+      "sentiment": "positive",
+      "text": "Sound quality is crisp and the fit feels comfortable during my commute.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-038",
+      "rating": 4,
+      "sentiment": "positive",
+      "text": "Comfortable padding and clear audio for podcasts.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-039",
+      "rating": 4,
+      "sentiment": "positive",
+      "text": "The headphones sound good and do not feel heavy.",
+      "source_url": null
+    },
+    {
+      "id": "BH-I-040",
+      "rating": 4,
+      "sentiment": "positive",
+      "text": "I like the clear sound and comfortable fit.",
+      "source_url": null
+    }
+  ],
+  "expected_review_count": 40,
+  "seller": null,
+  "expected_rating_average": 4.5,
+  "sentiment_counts": {
+    "positive": 25,
+    "neutral": 5,
+    "negative": 10
+  }
+}

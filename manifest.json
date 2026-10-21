@@ -1,0 +1,36 @@
+{
+  "generated_locally": true,
+  "synthetic_reviews_not_real": true,
+  "datasets": {
+    "bluetooth_headphones_x": {
+      "file": "bluetooth_headphones_x.json",
+      "review_count": 40,
+      "average_rating": 4.7,
+      "sentiment_counts": {
+        "positive": 36,
+        "neutral": 2,
+        "negative": 2
+      }
+    },
+    "bluetooth_headphones_x_charging_issue": {
+      "file": "bluetooth_headphones_x_charging_issue.json",
+      "review_count": 40,
+      "average_rating": 4.5,
+      "sentiment_counts": {
+        "positive": 25,
+        "neutral": 5,
+        "negative": 10
+      }
+    },
+    "matte_lip_cream_y": {
+      "file": "matte_lip_cream_y.json",
+      "review_count": 40,
+      "average_rating": 4.8,
+      "sentiment_counts": {
+        "positive": 36,
+        "neutral": 2,
+        "negative": 2
+      }
+    }
+  }
+}

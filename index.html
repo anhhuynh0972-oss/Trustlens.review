@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TrustLens — Review Analyzer</title>
+<style>
+:root{--ink:#171717;--muted:#68656a;--green:#ff9eac;--deep:#f21f32;--line:#eee1e4;--paper:#fff7f8;--white:#fff;--orange:#f0a13a;--red:#f21f32;--pale-red:#ffe5e9}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+a{color:inherit}.nav{height:72px;display:flex;align-items:center;justify-content:space-between;max-width:1240px;margin:auto;padding:0 25px;border-bottom:1px solid #f4e9eb}
+.brand{display:flex;align-items:center;gap:10px;font-weight:850;font-size:21px;letter-spacing:-.7px;text-decoration:none}.logo{width:34px;height:34px;border-radius:11px;background:var(--deep);display:grid;place-items:center;color:var(--green);font-size:18px}
+.navright{display:flex;align-items:center;gap:14px}.demo-pill{background:#ffe5e9;color:#a01d2b;border:1px solid #f5c6ce;padding:7px 10px;border-radius:20px;font-size:11px;font-weight:850;letter-spacing:.4px}.navbtn,.secondary,.primary{border:0;border-radius:11px;padding:11px 15px;font-size:13px;font-weight:750;cursor:pointer}.navbtn,.primary{background:var(--deep);color:white}.secondary{background:#fff0f2;color:#a01d2b;border:1px solid #f5c6ce}.navbtn:disabled,.primary:disabled{opacity:.55;cursor:wait}
+main{max-width:1240px;margin:auto;padding:28px 25px 60px}.eyebrow{display:inline-flex;align-items:center;gap:8px;border:1px solid #f3cbd1;background:#fff;border-radius:30px;padding:7px 11px;font-size:11px;color:#a01d2b;font-weight:800}.dot{width:7px;height:7px;border-radius:50%;background:#f21f32}
+h1{font-size:clamp(34px,4vw,48px);line-height:1.04;letter-spacing:-2.4px;margin:17px 0 12px}h1 span{color:#f21f32}.lede{font-size:15px;line-height:1.65;color:var(--muted);max-width:740px;margin:0 0 22px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:19px;padding:22px;box-shadow:0 10px 30px #f21f320a}.input-layout{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}.panel h2{font-size:17px;letter-spacing:-.4px;margin:0 0 7px}.sub{font-size:12px;color:var(--muted);line-height:1.55;margin:0 0 16px}.field-label{display:block;font-size:12px;font-weight:800;margin:13px 0 7px}.url-row{display:flex;gap:8px}.url-row input,.text-area,.file-label{width:100%;border:1px solid #eadfe1;background:#fbfcfa;border-radius:11px;padding:12px 13px;font:inherit;font-size:13px;outline:none}.url-row input:focus,.text-area:focus{border-color:#f21f32;box-shadow:0 0 0 3px #ff9eac45}.url-row input{min-width:0;flex:1}.text-area{resize:vertical;min-height:120px;line-height:1.5}.divider-label{display:flex;align-items:center;gap:10px;color:#8b968e;font-size:10px;font-weight:800;letter-spacing:1px;margin:17px 0}.divider-label:before,.divider-label:after{content:"";height:1px;background:var(--line);flex:1}.samples{display:grid;gap:9px}.sample-btn{width:100%;text-align:left;border:1px solid #f0dfe2;background:#fff8f9;padding:13px 14px;border-radius:12px;cursor:pointer;display:flex;justify-content:space-between;gap:10px;align-items:center;color:var(--ink)}.sample-btn:hover{border-color:#f58a98;background:#fff0f2}.sample-btn strong{display:block;font-size:13px}.sample-btn small{display:block;font-size:11px;color:var(--muted);margin-top:4px}.sample-btn .arrow{font-size:18px;color:#c51e30}.sample-btn.issue{border-color:#f5c6ce;background:#fff8f9}.sample-btn.issue .arrow{color:var(--red)}.notice{margin-top:13px;border-radius:11px;background:#fff2f3;border:1px solid #f5c6ce;padding:11px 13px;color:#8b3440;font-size:11px;line-height:1.55}.status-msg{display:none;margin-top:12px;padding:11px 13px;border-radius:10px;font-size:12px;line-height:1.5}.status-msg.show{display:block}.status-msg.error{background:#fff0ed;color:#9d3d32;border:1px solid #f5c6ce}.status-msg.info{background:#fff0f2;color:#a01d2b;border:1px solid #f5c6ce}.upload-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.upload-row input{font-size:12px;max-width:100%}
+.dashboard{display:none;margin-top:28px}.dashboard.show{display:block}.dash-title{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;flex-wrap:wrap;margin:0 0 16px}.dash-title h2{margin:0 0 5px;font-size:25px;letter-spacing:-1px}.dash-title p{margin:0;color:var(--muted);font-size:12px}.source-label{display:inline-block;background:#ffe5e9;border:1px solid #f5c6ce;color:#a01d2b;padding:7px 10px;border-radius:9px;font-size:10px;font-weight:900;letter-spacing:.45px;line-height:1.4}.source-label.real{background:#fff0f2;color:#a01d2b;border-color:#f5c6ce}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:15px}.metric{background:white;border:1px solid var(--line);border-radius:15px;padding:17px}.metric .label{font-size:11px;color:var(--muted);font-weight:700}.metric .value{font-size:30px;letter-spacing:-1.3px;font-weight:850;margin:7px 0 3px}.metric .foot{font-size:10px;color:#89948c}.sentimentbar{display:flex;height:9px;border-radius:9px;overflow:hidden;background:#edf1eb;margin:12px 0 10px}.sentimentbar span{height:100%;display:block}.positive{background:#f21f32}.neutral{background:#ff9eac}.negative{background:#8e1e2a}.sentiment-legend{display:flex;gap:15px;flex-wrap:wrap;font-size:11px;color:#67736b}.sentiment-legend b{color:var(--ink)}.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px}.dash-card{background:white;border:1px solid var(--line);border-radius:16px;padding:20px;min-width:0}.card-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}.card-head h3{font-size:15px;margin:0;letter-spacing:-.3px}.tag{font-size:10px;background:#fff0f2;color:#9d4550;border-radius:6px;padding:5px 7px;font-weight:800}.insight{padding:12px 0;border-bottom:1px solid #f4e9eb}.insight:last-child{border-bottom:0;padding-bottom:0}.insight-title{font-size:13px;font-weight:800;margin-bottom:5px}.insight p{font-size:12px;color:#5f6b63;line-height:1.55;margin:0}.evidence{margin-top:8px;background:#fff8f9;border-left:3px solid #ff9eac;padding:9px 10px;border-radius:0 8px 8px 0;font-size:11px;line-height:1.5;color:#526057}.evidence a{font-weight:800;text-decoration:underline}.concern-card{border-color:#f0d7d0}.concern-card .tag{background:#fff0ed;color:#c51e30}.alert{padding:13px 0;border-bottom:1px solid #f4e1e4}.alert:last-child{border-bottom:0}.alert-title{display:flex;gap:9px;align-items:flex-start}.alert-icon{width:26px;height:26px;flex-shrink:0;border-radius:8px;background:#fff0ed;color:#f21f32;display:grid;place-items:center;font-weight:900}.alert h4{font-size:13px;margin:1px 0 5px}.alert .count{font-size:11px;font-weight:850;color:#c51e30}.alert p{font-size:12px;color:#68756f;line-height:1.55;margin:7px 0 0}.seller-state{padding:16px;background:#fff8f9;border-radius:11px;color:#69766d;font-size:13px;line-height:1.6}.highlights{display:grid;grid-template-columns:1fr 1fr;gap:10px}.highlight{padding:12px;border:1px solid var(--line);border-radius:11px}.highlight .kind{font-size:10px;text-transform:uppercase;font-weight:900;letter-spacing:.7px;color:#c51e30}.highlight .kind.concern{color:#b65a4d}.highlight h4{font-size:13px;margin:6px 0}.highlight p{font-size:11px;color:#68756f;line-height:1.5;margin:0}.review-list{display:grid;gap:8px;margin-top:10px}.review-item{border:1px solid #f0e4e6;border-radius:10px;padding:10px}.review-item summary{cursor:pointer;font-size:11px;font-weight:800;display:flex;justify-content:space-between;gap:10px}.review-item p{font-size:12px;line-height:1.6;color:#58655c;margin:9px 0 0}.review-item .rid{color:#f21f32}.fineprint{font-size:10px;line-height:1.6;color:#7b877f;margin:12px 0 0}.loading{display:inline-flex;align-items:center;gap:8px}.spinner{width:13px;height:13px;border:2px solid #ffffff70;border-top-color:white;border-radius:50%;animation:spin .7s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}footer{border-top:1px solid #e7ece6;padding:20px 25px;max-width:1240px;margin:auto;display:flex;justify-content:space-between;gap:12px;color:#7b877f;font-size:11px}
+
+.how-panel{overflow:hidden}.steps-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px}.step{background:#ffe5e9;border:1px solid #f5c6ce;border-radius:13px;padding:12px;min-height:120px;display:flex;flex-direction:column;gap:7px}.step span{font-size:11px;font-weight:900;color:#f21f32}.step b{font-size:13px}.step small{font-size:11px;line-height:1.45;color:#6d5559}.stack-row{display:flex;align-items:center;justify-content:center;gap:13px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px dashed #e7c4ca;font-size:12px}.stack-row>b{font-size:10px;letter-spacing:.6px;color:#9b3b47}.stack-row span{font-weight:800}.stack-row i{font-style:normal;color:#f21f32;font-weight:900}
+@media(max-width:850px){.input-layout,.dash-grid{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}.steps-grid{grid-template-columns:repeat(3,minmax(0,1fr)}}
+@media(max-width:520px){.steps-grid{grid-template-columns:repeat(2,minmax(0,1fr))}main{padding:22px 15px 45px}.nav{padding:0 15px}.navright{gap:7px}.demo-pill{display:none}.panel{padding:16px}.url-row{flex-direction:column}.url-row .primary{padding:13px}.metrics{gap:8px}.metric{padding:13px}.metric .value{font-size:25px}.highlights{grid-template-columns:1fr}.dash-title h2{font-size:22px}footer{padding:18px 15px;flex-direction:column}}
+</style></head>
+<body>
+<header class="nav">
+ <a class="brand" href="#" id="homeLink"><span class="logo">◉</span> trustlens</a>
+ <div class="navright"><span class="demo-pill" id="modePill">REVIEW INTELLIGENCE</span><button class="secondary" id="languageToggle" type="button" aria-label="Switch language">VI | EN</button><button class="navbtn" id="backBtn" style="display:none">← Back to input</button></div>
+</header>
+<main>
+<section id="inputPage">
+ <div class="eyebrow"><span class="dot"></span> AI-powered product review & credibility assistant</div>
+ <h1>Look closer.<br><span>Shop smarter.</span></h1>
+ <p class="lede">An AI-powered decision-support tool that helps Vietnamese Gen Z evaluate product and seller credibility before purchasing on TikTok Shop.</p>
+ <div class="input-layout">
+  <section class="panel">
+   <h2>Analyse a TikTok Shop product</h2><p class="sub">Paste a TikTok Shop product link to try the configured official data connection, or paste/import review text you are authorized to use.</p>
+   <form id="urlForm">
+    <label class="field-label" for="productUrl">Product or TikTok Shop URL</label>
+    <div class="url-row"><input id="productUrl" type="url" placeholder="https://…"><button class="primary" id="urlAnalyze" type="submit">Analyse Reviews →</button></div>
+   </form>
+   <div class="notice">Automatic retrieval requires a configured review provider (SocQ public-review API or an approved TikTok Research API) that supports the product and region. Availability is not guaranteed; TrustLens will never substitute demo reviews.</div>
+   <label class="field-label" for="manualReviews">Or paste review text (one review per line)</label>
+   <textarea class="text-area" id="manualReviews" placeholder="Review 1: Clear sound and comfortable fit&#10;Review 2: Battery drains quickly…"></textarea>
+   <div class="upload-row" style="margin-top:10px"><input id="fileInput" type="file" accept=".csv,.json,application/json,text/csv"><button class="secondary" id="analyzeText" type="button">Analyse pasted/imported reviews</button></div>
+   <div class="status-msg" id="inputMessage" role="status"></div>
+   <p class="fineprint">CSV: columns such as <code>text</code>, <code>review</code>, or <code>content</code> are supported. JSON: an array of review objects or an object with a <code>reviews</code> array.</p>
+  </section>
+  <section class="panel">
+   <h2>Explore the demo</h2><p class="sub">Runs entirely offline. Synthetic reviews are generated for demonstration—not scraped from any platform.</p>
+   <div class="samples">
+    <button class="sample-btn" data-sample="bluetooth_headphones_x"><span><strong>Try Sample: Bluetooth Headphones X</strong><small>Clear sound · Comfortable fit · Minor delivery delay</small></span><span class="arrow">↗</span></button>
+    <button class="sample-btn issue" data-sample="bluetooth_headphones_x_charging_issue"><span><strong>Try Sample: Headphones X — charging issue</strong><small>Recurring charging and battery complaints · 15 of 40</small></span><span class="arrow">↗</span></button>
+    <button class="sample-btn" data-sample="matte_lip_cream_y"><span><strong>Try Sample: Matte Lip Cream Y</strong><small>Color payoff · Smooth texture · Comfortable wear</small></span><span class="arrow">↗</span></button>
+   </div>
+   <div class="notice"><b>Demo data:</b> Synthetic records are fixed locally. Sample buttons bypass network requests and render immediately.</div>
+  </section>
+ </div>
+ <section class="panel how-panel" style="margin-top:18px">
+  <h2>How TrustLens works</h2>
+  <p class="sub">A transparent six-step workflow, aligned with the proposed solution.</p>
+  <div class="steps-grid">
+   <div class="step"><span>01</span><b>Select</b><small>Submit a product link or review records.</small></div>
+   <div class="step"><span>02</span><b>Analyse</b><small>AI & NLP interpret available review text.</small></div>
+   <div class="step"><span>03</span><b>Identify</b><small>Find repeated and conflicting patterns.</small></div>
+   <div class="step"><span>04</span><b>Summarise</b><small>Surface recurring experiences and complaints.</small></div>
+   <div class="step"><span>05</span><b>Evaluate</b><small>Compare evidence and verifiable seller signals.</small></div>
+   <div class="step"><span>06</span><b>Decide</b><small>Give shoppers evidence to make their own choice.</small></div>
+  </div>
+  <div class="stack-row"><b>PROPOSED TECHNOLOGY STACK</b><span>AI & NLP</span><i>→</i><span>Data Analytics</span><i>→</i><span>Transparency Signals</span></div>
+ </section>
+</section>
+
+<section class="dashboard" id="dashboard">
+ <div class="dash-title"><div><div class="eyebrow"><span class="dot"></span> ANALYSIS DASHBOARD</div><h2 id="productName" style="margin-top:13px">Product reviews</h2><p id="analysisMethod">Rule-based analysis · Counts computed from source records</p></div><div><span class="source-label" id="sourceBadge">DEMO DATA — SYNTHETIC REVIEWS, NOT REAL CUSTOMER REVIEWS</span></div></div>
+ <section class="dash-card" id="productDetails" style="display:none;margin-bottom:15px"><div class="card-head"><h3>Product details</h3><span class="tag" id="productPlatformTag">TIKTOK SHOP</span></div><div id="productDetailsBody" style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap"></div></section>
+ <div class="metrics" id="metrics"></div>
+ <div class="dash-grid">
+  <section class="dash-card"><div class="card-head"><h3>AI Review Summary</h3><span class="tag" id="summaryTag">RULE-BASED</span></div><div id="sentimentBlock"></div><div id="summaryText"></div><div class="fineprint" id="summaryLimit"></div></section>
+  <section class="dash-card"><div class="card-head"><h3>Seller Credibility Indicators</h3><span class="tag">VERIFIABLE FIELDS ONLY</span></div><div id="sellerBlock" class="seller-state">Seller information unavailable.</div><p class="fineprint">TrustLens does not generate a seller trust score. Seller claims require verifiable source fields.</p></section>
+ </div>
+ <div class="dash-grid">
+  <section class="dash-card concern-card"><div class="card-head"><h3>Potential Red-Flag Alerts</h3><span class="tag">SIGNALS TO INVESTIGATE</span></div><div id="alertsBlock"></div><p class="fineprint">Repeated complaints are a signal to investigate—not proof of fraud or a confirmed safety hazard.</p></section>
+  <section class="dash-card"><div class="card-head"><h3>Key Information Highlights</h3><span class="tag">EVIDENCE-LINKED</span></div><div id="highlightsBlock" class="highlights"></div><p class="fineprint">Synthetic reviews use review IDs, not fabricated source links. Original links appear only when provided in the input dataset.</p></section>
+ </div>
+ <section class="dash-card"><div class="card-head"><h3>Source review records</h3><span class="tag" id="reviewCountTag">40 RECORDS</span></div><p class="sub">Expand any record to inspect its exact text and ID. Insights link to these records where available.</p><div class="review-list" id="reviewList"></div><button class="secondary" id="showMore" style="margin-top:12px">Show all reviews</button>
+ <p class="fineprint">Counts are calculated from distinct review IDs. Review text and ratings are not generated by the summarizer.</p></section>
+</section>
+</main>
+<footer><span>© 2026 TrustLens · University project MVP</span><span>Evidence before assumptions.</span></footer>
+<script>
+const SAMPLE_IDS = ['bluetooth_headphones_x','bluetooth_headphones_x_charging_issue','matte_lip_cream_y'];
+const $ = id => document.getElementById(id);
+let activeDataset = null, showAllReviews = false, importedFileData = null;
+
+function message(text, kind='info') {
+ const el=$('inputMessage'); el.textContent=text; el.className='status-msg show '+kind;
+}
+function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function pct(n,total){return total ? (100*n/total).toFixed(1)+'%' : '0.0%';}
+function avg(reviews){return reviews.length ? reviews.reduce((s,r)=>s+Number(r.rating||0),0)/reviews.length : 0;}
+function classifyText(text){
+ const t=text.toLowerCase();
+ const neg=['not comfortable','uncomfortable','stopped charging','failed to charge','would not charge','battery drains','drains rapidly','drains quickly','charging connection is intermittent','arrived later','delivery took','arrived late','not as clear','drier than'];
+ const pos=['clear sound','comfortable','color payoff','smooth','soft','great','good sound','balanced vocals','lightweight','crisp','beautiful'];
+ if(neg.some(w=>t.includes(w))) return 'negative';
+ if(pos.some(w=>t.includes(w))) return 'positive';
+ return 'neutral';
+}
+function normalizeReviews(rows, prefix='USR'){
+ return rows.map((r,i)=>{
+  const text=String(r.text ?? r.review ?? r.content ?? r.comment ?? '').trim();
+  if(!text) return null;
+  const rating=Number(r.rating);
+  const sentiment=['positive','neutral','negative'].includes(String(r.sentiment||'').toLowerCase()) ? String(r.sentiment).toLowerCase() : classifyText(text);
+  return {id:String(r.id||`${prefix}-${String(i+1).padStart(3,'0')}`),text,rating:Number.isFinite(rating)&&rating>=1&&rating<=5?rating:null,sentiment,source_url:validHttpUrl(r.source_url||r.url)?(r.source_url||r.url):null};
+ }).filter(Boolean);
+}
+function validHttpUrl(s){try{const u=new URL(s);return u.protocol==='http:'||u.protocol==='https:';}catch{return false;}}
+function analyzeLocally(ds){
+ const reviews=ds.reviews, total=reviews.length;
+ const sentiments={positive:0,neutral:0,negative:0};
+ reviews.forEach(r=>sentiments[r.sentiment]++);
+ const ratings=reviews.filter(r=>r.rating!==null&&r.rating!==undefined&&r.rating!==''&&Number.isFinite(Number(r.rating))&&Number(r.rating)>=1&&Number(r.rating)<=5).map(r=>Number(r.rating));
+ const ratingAvg=ratings.length ? ratings.reduce((a,b)=>a+b,0)/ratings.length : null;
+ const evidence=(pred)=>reviews.filter(pred);
+ const issueAfterDays=evidence(r=>/stopped charging|would not charge|failed to charge|charging stopped working|charging failed|no longer came on|would not take a charge/i.test(r.text));
+ const rapidDrain=evidence(r=>/battery drains very quickly|battery life drops fast|battery drains rapidly/i.test(r.text));
+ const intermittent=evidence(r=>/charging works only sometimes|charging connection is intermittent/i.test(r.text));
+ const delivery=evidence(r=>/delivery (arrived|took)|arrived later|arrived late|parcel arrived later/i.test(r.text));
+ const strengthSound=evidence(r=>/sound is clear|clear sound|sound quality is crisp|clear audio|balanced vocals|vocals sound crisp/i.test(r.text));
+ const strengthComfort=evidence(r=>/comfortable fit|stays comfortable|feel comfortable|fit feels comfortable|padding feels soft|comfortable padding/i.test(r.text));
+ const strengthColor=evidence(r=>/color payoff|rich in one swipe|good pigment/i.test(r.text));
+ const strengthTexture=evidence(r=>/texture feels smooth|texture is creamy|formula feels soft|lightweight texture/i.test(r.text));
+ const strengthWear=evidence(r=>/comfortable wear|comfortable for hours|comfortable for everyday wear/i.test(r.text));
+ const issues=[];
+ const pushIssue=(title,arr,rationale,severity='moderate')=>{if(arr.length)issues.push({title,count:arr.length,percentage:arr.length/total*100,rationale,severity,review_ids:arr.map(r=>r.id),evidence:arr.slice(0,3).map(r=>({id:r.id,text:r.text,source_url:r.source_url}))});};
+ if(ds.id==='bluetooth_headphones_x_charging_issue'){
+  pushIssue('Device fails to charge after a few days',issueAfterDays,'Repeated charging failure is a product-functionality concern worth checking against warranty and return terms.','high');
+  pushIssue('Rapid battery drain',rapidDrain,'Multiple distinct reviews mention battery life dropping faster than expected.','moderate');
+  pushIssue('Intermittent charging',intermittent,'Charging that works inconsistently may affect everyday use.','moderate');
+ } else {
+  pushIssue('Delivery delays',delivery,'A small number of delivery-delay mentions may reflect fulfilment timing rather than product quality.','low');
+  if(ds.id!=='bluetooth_headphones_x' && ds.id!=='matte_lip_cream_y'){
+   pushIssue('Potential negative feedback',evidence(r=>r.sentiment==='negative'),'Negative reviews are worth reading in context.','moderate');
+  }
+ }
+ const strengths=[];
+ const pushStrength=(title,arr)=>{if(arr.length)strengths.push({title,count:arr.length,percentage:arr.length/total*100,review_ids:arr.slice(0,5).map(r=>r.id),evidence:arr.slice(0,2).map(r=>({id:r.id,text:r.text,source_url:r.source_url}))});};
+ if(ds.id.startsWith('bluetooth_headphones')){pushStrength('Clear sound',strengthSound);pushStrength('Comfortable fit',strengthComfort);}
+ if(ds.id==='matte_lip_cream_y'){pushStrength('Color payoff',strengthColor);pushStrength('Smooth texture',strengthTexture);pushStrength('Comfortable wear',strengthWear);}
+ if(!strengths.length){pushStrength('Positive experiences',evidence(r=>r.sentiment==='positive'));}
+ return {total,sentiments,ratingAvg,ratingCount:ratings.length,strengths,issues,reviews,summary:ds.description||'Summary based on recurring patterns in the supplied review text.',method:'Deterministic local analysis · Counts computed from distinct source review records',kind:ds.kind||'user_input',name:ds.name||'User-provided reviews',seller:ds.seller||null,limitations:'Rule-based pattern matching is not a validated fake-review detector. Sentiment for manually supplied text is a heuristic; inspect source reviews before making decisions.'};
+}
+function reviewAnchor(id){return `<a href="#review-${encodeURIComponent(id)}">${escapeHtml(id)}</a>`;}
+function renderEvidence(list){
+ if(!list||!list.length)return '<div class="evidence">No matching source excerpts available.</div>';
+ return list.map(e=>`<div class="evidence">“${escapeHtml(e.text)}”<br>Source: ${e.source_url?`<a href="${escapeHtml(e.source_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(e.id)} ↗</a>`:reviewAnchor(e.id)}</div>`).join('');
+}
+function renderDashboard(a){
+ activeDataset=a; $('inputPage').style.display='none'; $('dashboard').classList.add('show'); $('backBtn').style.display='inline-block';
+ $('productName').textContent=a.name; $('analysisMethod').textContent=a.method;
+ const synthetic=a.kind==='synthetic_demo';
+ $('sourceBadge').textContent=synthetic?'DEMO DATA — SYNTHETIC REVIEWS, NOT REAL CUSTOMER REVIEWS':(a.kind==='live_source'?'LIVE SOURCE DATA — TIKTOK API':(a.kind==='user_input'?'USER-PROVIDED REVIEW TEXT':'IMPORTED DATASET'));
+ $('sourceBadge').className='source-label'+(synthetic?'':' real');
+ const productDetails=$('productDetails');
+ if(a.product){productDetails.style.display='block';$('productPlatformTag').textContent=escapeHtml(a.product.platform||'PRODUCT SOURCE');const img=a.product.image_url&&validHttpUrl(a.product.image_url)?'<img src="'+escapeHtml(a.product.image_url)+'" alt="Product image" style="width:94px;height:94px;object-fit:contain;border:1px solid #eee1e4;border-radius:12px;background:#fff">':'';const facts=[a.product.price?'<div><b>Price:</b> '+escapeHtml(a.product.price)+'</div>':'',a.product.rating?'<div><b>Rating:</b> '+escapeHtml(a.product.rating)+'</div>':'',a.product.review_count!==undefined&&a.product.review_count!==null?'<div><b>Platform review count:</b> '+escapeHtml(a.product.review_count)+'</div>':'',a.product.product_id?'<div><b>Product ID:</b> '+escapeHtml(a.product.product_id)+'</div>':''].filter(Boolean).join('');$('productDetailsBody').innerHTML=img+'<div style="font-size:12px;line-height:1.8;min-width:180px;flex:1"><div style="font-size:16px;font-weight:850;margin-bottom:5px">'+escapeHtml(a.product.name||a.name)+'</div>'+(facts||'<div>Some product details were not returned by the connected source.</div>')+'<div style="margin-top:6px;overflow-wrap:anywhere"><a href="'+escapeHtml(a.product.url||'#')+'" target="_blank" rel="noopener noreferrer">Open source product ↗</a></div></div>';}else{productDetails.style.display='none';}
+ $('summaryTag').textContent=a.method.toLowerCase().includes('gemini')?'GEMINI + VERIFIED COUNTS':'RULE-BASED';
+ const avgText=a.ratingAvg===null?'N/A':a.ratingAvg.toFixed(1)+'/5';
+ $('metrics').innerHTML=`
+ <div class="metric"><div class="label">Total reviews</div><div class="value">${a.total}</div><div class="foot">Distinct records in dataset</div></div>
+ <div class="metric"><div class="label">Average rating</div><div class="value">${avgText}</div><div class="foot">${a.ratingCount} reviews with numeric ratings</div></div>
+ <div class="metric"><div class="label">Positive reviews</div><div class="value">${a.sentiments.positive}</div><div class="foot">${pct(a.sentiments.positive,a.total)} of dataset</div></div>
+ <div class="metric"><div class="label">Potential concerns</div><div class="value">${a.issues.reduce((s,x)=>s+x.count,0)}</div><div class="foot">Issue counts may overlap</div></div>`;
+ $('sentimentBlock').innerHTML=`<div class="sentimentbar"><span class="positive" style="width:${pct(a.sentiments.positive,a.total)}"></span><span class="neutral" style="width:${pct(a.sentiments.neutral,a.total)}"></span><span class="negative" style="width:${pct(a.sentiments.negative,a.total)}"></span></div><div class="sentiment-legend"><span>● <b>${a.sentiments.positive}</b> Positive (${pct(a.sentiments.positive,a.total)})</span><span style="color:#a17e30">● <b>${a.sentiments.neutral}</b> Neutral (${pct(a.sentiments.neutral,a.total)})</span><span style="color:#c95b4b">● <b>${a.sentiments.negative}</b> Negative (${pct(a.sentiments.negative,a.total)})</span></div>`;
+ $('summaryText').innerHTML=`<div class="insight"><div class="insight-title">Evidence-based overview</div><p>${escapeHtml(a.summary)} ${a.total?`This dataset contains ${a.total} distinct review records with an average rating of ${avgText}.`:''}</p></div><div class="insight"><div class="insight-title">Main strengths</div>${a.strengths.length?a.strengths.map(s=>`<p>• ${escapeHtml(s.title)} — ${s.count} of ${a.total} reviews (${pct(s.count,a.total)}).</p>`).join(''):'<p>No recurring strength was identified by the local rules.</p>'}</div><div class="insight"><div class="insight-title">Main weaknesses</div>${a.issues.length?a.issues.map(x=>`<p>• ${escapeHtml(x.title)} — ${x.count} of ${a.total} reviews (${pct(x.count,a.total)}).</p>`).join(''):'<p>No recurring issue was detected by the local rules. This does not prove that no issues exist.</p>'}</div>`;
+ $('summaryLimit').textContent='Observed counts are computed locally. '+a.limitations;
+ $('sellerBlock').textContent=a.seller&&Object.keys(a.seller).length?JSON.stringify(a.seller):'Seller information unavailable.';
+ $('alertsBlock').innerHTML=a.issues.length?a.issues.map(x=>`<div class="alert"><div class="alert-title"><div class="alert-icon">!</div><div style="flex:1"><h4>${escapeHtml(x.title)}</h4><div class="count">${x.count} of ${a.total} reviews (${pct(x.count,a.total)}) · ${x.severity==='high'?'Higher-priority signal':x.severity==='low'?'Low-priority signal':'Moderate signal'}</div></div></div><p>${escapeHtml(x.rationale)}</p>${renderEvidence(x.evidence)}<p>Supporting review IDs: ${x.review_ids.map(reviewAnchor).join(', ')}</p></div>`).join(''):'<div class="seller-state">No recurring issue was detected by the current local rules. This is not a guarantee that the product has no problems.</div>';
+ let cards=[];
+ a.strengths.forEach(x=>cards.push(`<div class="highlight"><div class="kind">Strength</div><h4>${escapeHtml(x.title)}</h4><p>${x.count} of ${a.total} reviews (${pct(x.count,a.total)}). IDs: ${x.review_ids.map(escapeHtml).join(', ')}</p>${renderEvidence(x.evidence.slice(0,1))}</div>`));
+ a.issues.forEach(x=>cards.push(`<div class="highlight"><div class="kind concern">Potential concern</div><h4>${escapeHtml(x.title)}</h4><p>${x.count} of ${a.total} reviews (${pct(x.count,a.total)}). IDs: ${x.review_ids.map(escapeHtml).join(', ')}</p>${renderEvidence(x.evidence.slice(0,1))}</div>`));
+ $('highlightsBlock').innerHTML=cards.join('')||'<p>No key highlights detected.</p>';
+ $('reviewCountTag').textContent=`${a.reviews.length} RECORDS`;
+ renderReviewList();
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+function renderReviewList(){
+ if(!activeDataset)return;
+ const rows=showAllReviews?activeDataset.reviews:activeDataset.reviews.slice(0,8);
+ $('reviewList').innerHTML=rows.map(r=>`<details class="review-item" id="review-${encodeURIComponent(r.id)}"><summary><span><span class="rid">${escapeHtml(r.id)}</span> · ${escapeHtml(r.sentiment||'unclassified')}</span><span>${r.rating===null||r.rating===undefined?'Rating unavailable':'★ '+escapeHtml(r.rating)+'/5'}　⌄</span></summary><p>${escapeHtml(r.text)}${r.source_url?`<br><a href="${escapeHtml(r.source_url)}" target="_blank" rel="noopener noreferrer">Open original review ↗</a>`:''}</p></details>`).join('');
+ $('showMore').style.display=activeDataset.reviews.length>8?'inline-block':'none';
+ $('showMore').textContent=showAllReviews?'Show fewer reviews':'Show all reviews';
+}
+async function loadSample(id){
+ const btn=document.querySelector(`[data-sample="${id}"]`);
+ try{
+  const response=await fetch(`data/${id}.json`,{cache:'no-store'});
+  if(!response.ok)throw new Error('Could not load local sample dataset.');
+  const ds=await response.json();
+  const a=analyzeLocally(ds);
+  if(a.total!==40)throw new Error('Sample validation failed: expected 40 review records.');
+  if(id==='bluetooth_headphones_x_charging_issue'){
+   const charge=a.reviews.filter(r=>/stopped charging|would not charge|failed to charge|charging stopped working|charging failed|no longer came on|would not take a charge/i.test(r.text)).length;
+   const drain=a.reviews.filter(r=>/battery drains very quickly|battery life drops fast|battery drains rapidly/i.test(r.text)).length;
+   const intermittent=a.reviews.filter(r=>/charging works only sometimes|charging connection is intermittent/i.test(r.text)).length;
+   if(charge!==10||drain!==3||intermittent!==2||a.ratingAvg.toFixed(1)!=='4.5')throw new Error('Charging sample failed its data integrity checks.');
+  }
+  renderDashboard(a);
+ }catch(err){message('Sample could not be loaded: '+err.message+'. Check that the local server is running and try again.','error');}
+}
+document.querySelectorAll('[data-sample]').forEach(btn=>btn.addEventListener('click',()=>loadSample(btn.dataset.sample)));
+$('backBtn').addEventListener('click',()=>{$('dashboard').classList.remove('show');$('inputPage').style.display='block';$('backBtn').style.display='none';window.scrollTo({top:0,behavior:'smooth'});});
+$('homeLink').addEventListener('click',e=>{e.preventDefault();$('backBtn').click();});
+$('showMore').addEventListener('click',()=>{showAllReviews=!showAllReviews;renderReviewList();});
+$('urlForm').addEventListener('submit',async e=>{
+ e.preventDefault();const val=$('productUrl').value.trim();if(!val){message('Paste a TikTok Shop product URL.','error');return;}if(!validHttpUrl(val)){message('Please enter a valid URL beginning with http:// or https://.','error');return;}
+ const btn=$('urlAnalyze'),original=btn.textContent;btn.disabled=true;btn.innerHTML='<span class="loading"><span class="spinner"></span> Fetching product & reviews…</span>';message('Checking the configured TikTok Shop data connection. TrustLens will not use demo data for this link.','info');
+ try{
+  const res=await fetch('/api/tiktok-review',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:val})});const data=await res.json().catch(()=>({}));
+  if(!res.ok)throw new Error(data.error||'Could not retrieve product reviews.');
+  if(!Array.isArray(data.reviews)||!data.reviews.length)throw new Error('The source returned no review text for this product. No sample data was substituted.');
+  const reviews=normalizeReviews(data.reviews.map((r,i)=>({id:r.id||'TT-'+String(i+1).padStart(3,'0'),text:r.text||r.review_text,rating:r.rating,source_url:val,sentiment:r.sentiment})).filter(r=>String(r.text||'').trim()),'TT');
+  if(!reviews.length)throw new Error('The source returned no usable review text.');
+  let result=analyzeLocally({id:'live_tiktok_product',name:data.product?.name||'TikTok Shop product',kind:'live_source',reviews,seller:null,description:'Initial counts are computed from the review records returned by the configured source.'});
+  result.name=data.product?.name||result.name;result.product={...(data.product||{}),url:val,platform:'TikTok Shop'};result.kind='live_source';
+  const aiRes=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reviews:reviews.map(r=>({id:r.id,text:r.text})),language:currentLanguage})});
+  if(aiRes.ok){const aiData=await aiRes.json();if(aiData.ai){result.summary=aiData.ai.summary||result.summary;result.method='AI interpretation + locally verified counts · TikTok source';result.limitations=(aiData.ai.limitations||[]).join(' ')||result.limitations;result.strengths=validateAiInsights(aiData.ai.strengths,reviews,result.strengths);result.issues=validateAiConcerns(aiData.ai.potential_concerns,reviews,result.issues);}}
+  else {const err=await aiRes.json().catch(()=>({}));if(aiRes.status!==404)throw new Error(err.error||'Review data was retrieved, but AI interpretation failed. Configure GEMINI_API_KEY and retry.');result.method='Rule-based interpretation · TikTok source';result.limitations+=' AI interpretation is not configured; shown patterns use local heuristics only.';}
+  renderDashboard(result);message('Retrieved '+reviews.length+' review records from the configured TikTok data source.','info');
+ }catch(err){message(err.message+' If this is a Vietnam TikTok Shop link, the official Research API may not cover it; use an approved provider or paste/export the reviews. TrustLens did not substitute sample reviews.','error');}
+ finally{btn.disabled=false;btn.textContent=original;}
+});
+$('fileInput').addEventListener('change',async e=>{
+ const file=e.target.files?.[0];if(!file)return;
+ try{
+  const raw=await file.text();let rows=[];
+  if(file.name.toLowerCase().endsWith('.json')){const obj=JSON.parse(raw);rows=Array.isArray(obj)?obj:(Array.isArray(obj.reviews)?obj.reviews:[]);}
+  else {const lines=raw.split(/\r?\n/).filter(x=>x.trim());if(lines.length<2)throw new Error('CSV needs a header and at least one review row.');const parseLine=line=>{const out=[];let cur='',quoted=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'&&line[i+1]==='"'&&quoted){cur+='"';i++;}else if(c==='"')quoted=!quoted;else if(c===','&&!quoted){out.push(cur);cur='';}else cur+=c;}out.push(cur);return out;};const headers=parseLine(lines[0]).map(x=>x.trim().toLowerCase());rows=lines.slice(1).map(line=>{const cells=parseLine(line);const o={};headers.forEach((h,i)=>o[h]=cells[i]??'');return o;});}
+  const normalized=normalizeReviews(rows,'CSV');
+  if(!normalized.length)throw new Error('No review text found. Use a text/review/content column or JSON review objects.');
+  importedFileData={name:file.name,reviews:normalized,seller:null,kind:'user_input'};
+  message(`Imported ${normalized.length} review records from ${file.name}. Click “Analyse pasted/imported reviews” to continue.`,'info');
+ }catch(err){importedFileData=null;message('Import failed: '+err.message,'error');}
+});
+$('analyzeText').addEventListener('click',async()=>{
+ const btn=$('analyzeText'), original=btn.textContent;
+ let reviews=[], name='User-provided reviews';
+ if(importedFileData){reviews=importedFileData.reviews;name=importedFileData.name;}
+ else {const text=$('manualReviews').value.trim();if(!text){message('Paste at least one review or choose a CSV/JSON file before analysing.','error');return;}reviews=normalizeReviews(text.split(/\r?\n/).filter(x=>x.trim()).map((text,i)=>({id:`USR-${String(i+1).padStart(3,'0')}`,text})));if(!reviews.length){message('No valid review text found. Each non-empty line should contain one review.','error');return;}}
+ btn.disabled=true;btn.innerHTML='<span class="loading"><span class="spinner"></span> Analysing…</span>';message(`Processing ${reviews.length} review records locally…`,'info');
+ try{
+  const payload={id:'user_input',name,kind:'user_input',reviews,seller:null,description:'Summary based on user-provided review text.'};
+  let result=analyzeLocally(payload);
+  // If server-side Gemini is configured, use it only for interpretation; local counts remain authoritative.
+  try{
+   const res=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reviews:reviews.map(r=>({id:r.id,text:r.text})),language:currentLanguage})});
+   if(res.ok){const data=await res.json();if(data&&data.ai){result.summary=data.ai.summary||result.summary;result.method='Gemini interpretation + locally verified counts';result.limitations=(data.ai.limitations||[]).join(' ')||result.limitations;result.strengths=validateAiInsights(data.ai.strengths,reviews,result.strengths);result.issues=validateAiConcerns(data.ai.potential_concerns,reviews,result.issues);}}
+   else if(res.status!==404){const data=await res.json().catch(()=>({}));throw new Error(data.error||'Gemini analysis failed');}
+  }catch(err){if(err.message&&err.message!=='Failed to fetch')console.warn('Optional Gemini unavailable; using local analysis.',err.message);}
+  renderDashboard(result);message('Analysis complete. Counts were calculated by TrustLens from the supplied records.','info');
+ }catch(err){message('Analysis failed: '+err.message,'error');}
+ finally{btn.disabled=false;btn.textContent=original;}
+});
+function validateAiInsights(items,reviews,fallback){
+ if(!Array.isArray(items))return fallback;const ids=new Set(reviews.map(r=>r.id));
+ return items.slice(0,5).map(item=>{const validIds=Array.isArray(item.evidence_review_ids)?item.evidence_review_ids.filter(id=>ids.has(id)):[];const ev=validIds.map(id=>reviews.find(r=>r.id===id)).filter(Boolean).slice(0,3).map(r=>({id:r.id,text:r.text,source_url:r.source_url}));return {title:String(item.title||item.name||'Observed strength').slice(0,140),count:validIds.length,percentage:validIds.length/reviews.length*100,review_ids:validIds,evidence:ev};}).filter(x=>x.review_ids.length);
+}
+function validateAiConcerns(items,reviews,fallback){
+ if(!Array.isArray(items))return fallback;const ids=new Set(reviews.map(r=>r.id));
+ const valid=items.slice(0,5).map(item=>{const validIds=Array.isArray(item.evidence_review_ids)?[...new Set(item.evidence_review_ids.filter(id=>ids.has(id)))]:[];const ev=validIds.map(id=>reviews.find(r=>r.id===id)).filter(Boolean).slice(0,3).map(r=>({id:r.id,text:r.text,source_url:r.source_url}));return {title:String(item.title||'Potential concern').slice(0,140),count:validIds.length,percentage:validIds.length/reviews.length*100,review_ids:validIds,evidence:ev,rationale:String(item.rationale||'Review the cited records in context.').slice(0,500),severity:'moderate'};}).filter(x=>x.review_ids.length);
+ return valid.length?valid:fallback;
+}
+
+// Bilingual interface: English is the default; click VI | EN to switch.
+let currentLanguage = 'en';
+const viText = [
+['AI-powered product review & credibility assistant','Trợ lý AI phân tích đánh giá và độ tin cậy sản phẩm'],
+['Look closer.','Tìm hiểu kỹ hơn.'],['Shop smarter.','Mua sắm thông minh hơn.'],
+['An AI-powered decision-support tool that helps Vietnamese Gen Z evaluate product and seller credibility before purchasing on TikTok Shop.','Công cụ hỗ trợ ra quyết định bằng AI, giúp Gen Z Việt Nam đánh giá độ tin cậy của sản phẩm và người bán trước khi mua trên TikTok Shop.'],
+['Analyse a TikTok Shop product','Phân tích sản phẩm TikTok Shop'],
+['Paste a TikTok Shop product link to try the configured official data connection, or paste/import review text you are authorized to use.','Dán liên kết sản phẩm TikTok Shop để thử kết nối dữ liệu đã cấu hình, hoặc dán/nhập nội dung đánh giá mà bạn được phép sử dụng.'],
+['Product or TikTok Shop URL','Liên kết sản phẩm hoặc TikTok Shop'],
+['Analyse Reviews →','Phân tích đánh giá →'],
+['Automatic retrieval requires a configured review provider (SocQ public-review API or an approved TikTok Research API) that supports the product and region. Availability is not guaranteed; TrustLens will never substitute demo reviews.','Tự động lấy đánh giá cần có nhà cung cấp dữ liệu (API review công khai SocQ hoặc TikTok Research API đã được phê duyệt) hỗ trợ sản phẩm và khu vực. Không đảm bảo mọi sản phẩm đều có dữ liệu; TrustLens không thay thế bằng review demo.'],
+['Or paste review text (one review per line)','Hoặc dán nội dung đánh giá (mỗi dòng một đánh giá)'],
+['Review 1: Clear sound and comfortable fit\nReview 2: Battery drains quickly…','Đánh giá 1: Âm thanh rõ và đeo thoải mái\nĐánh giá 2: Pin hết nhanh…'],
+['Analyse pasted/imported reviews','Phân tích đánh giá đã dán/nhập'],
+['CSV: columns such as','CSV: các cột như'],
+['are supported. JSON: an array of review objects or an object with a','được hỗ trợ. JSON: một mảng đối tượng đánh giá hoặc một đối tượng có mảng'],
+['array.','.'],
+['Explore the demo','Khám phá bản demo'],
+['Runs entirely offline. Synthetic reviews are generated for demonstration—not scraped from any platform.','Chạy hoàn toàn ngoại tuyến. Đánh giá tổng hợp được tạo để minh họa, không được thu thập từ bất kỳ nền tảng nào.'],
+['Try Sample: Bluetooth Headphones X','Thử mẫu: Tai nghe Bluetooth X'],
+['Clear sound · Comfortable fit · Minor delivery delay','Âm thanh rõ · Đeo thoải mái · Giao hàng hơi trễ'],
+['Try Sample: Headphones X — charging issue','Thử mẫu: Tai nghe X — vấn đề sạc'],
+['Recurring charging and battery complaints · 15 of 40','Phản ánh lặp lại về sạc và pin · 15 trên 40'],
+['Try Sample: Matte Lip Cream Y','Thử mẫu: Son kem lì Y'],
+['Color payoff · Smooth texture · Comfortable wear','Lên màu tốt · Chất son mịn · Dễ chịu khi dùng'],
+['Demo data:','Dữ liệu demo:'],
+['Synthetic records are fixed locally. Sample buttons bypass network requests and render immediately.','Dữ liệu tổng hợp được lưu cục bộ. Các nút mẫu không gọi mạng và hiển thị ngay lập tức.'],
+['How TrustLens works','TrustLens hoạt động như thế nào'],
+['A transparent six-step workflow, aligned with the proposed solution.','Quy trình sáu bước minh bạch, phù hợp với giải pháp đề xuất.'],
+['Select','Chọn'],['Submit a product link or review records.','Gửi liên kết sản phẩm hoặc dữ liệu đánh giá.'],
+['Analyse','Phân tích'],['AI & NLP interpret available review text.','AI và NLP diễn giải nội dung đánh giá hiện có.'],
+['Identify','Nhận diện'],['Find repeated and conflicting patterns.','Tìm các xu hướng lặp lại và mâu thuẫn.'],
+['Summarise','Tóm tắt'],['Surface recurring experiences and complaints.','Làm nổi bật trải nghiệm và phàn nàn lặp lại.'],
+['Evaluate','Đánh giá'],['Compare evidence and verifiable seller signals.','Đối chiếu bằng chứng và dấu hiệu người bán có thể xác minh.'],
+['Decide','Quyết định'],['Give shoppers evidence to make their own choice.','Cung cấp bằng chứng để người mua tự đưa ra lựa chọn.'],
+['PROPOSED TECHNOLOGY STACK','CẤU TRÚC CÔNG NGHỆ ĐỀ XUẤT'],
+['AI & NLP','AI & NLP'],['Data Analytics','Phân tích dữ liệu'],['Transparency Signals','Dấu hiệu minh bạch'],
+['ANALYSIS DASHBOARD','BẢNG ĐIỀU KHIỂN PHÂN TÍCH'],
+['Product reviews','Đánh giá sản phẩm'],['Rule-based analysis · Counts computed from source records','Phân tích theo quy tắc · Số liệu được tính từ dữ liệu nguồn'],
+['Product details','Thông tin sản phẩm'],['AI Review Summary','Tóm tắt đánh giá bằng AI'],
+['Seller Credibility Indicators','Chỉ báo độ tin cậy của người bán'],['VERIFIABLE FIELDS ONLY','CHỈ CÁC TRƯỜNG CÓ THỂ XÁC MINH'],
+['Seller information unavailable.','Không có thông tin người bán.'],
+['TrustLens does not generate a seller trust score. Seller claims require verifiable source fields.','TrustLens không tạo điểm tin cậy cho người bán. Các thông tin về người bán cần có trường dữ liệu nguồn có thể xác minh.'],
+['Potential Red-Flag Alerts','Cảnh báo dấu hiệu cần lưu ý'],['SIGNALS TO INVESTIGATE','DẤU HIỆU CẦN KIỂM TRA'],
+['Repeated complaints are a signal to investigate—not proof of fraud or a confirmed safety hazard.','Các phàn nàn lặp lại là dấu hiệu cần kiểm tra, không phải bằng chứng gian lận hay nguy cơ an toàn đã được xác nhận.'],
+['Key Information Highlights','Điểm thông tin nổi bật'],['EVIDENCE-LINKED','GẮN VỚI BẰNG CHỨNG'],
+['Synthetic reviews use review IDs, not fabricated source links. Original links appear only when provided in the input dataset.','Đánh giá tổng hợp dùng mã đánh giá, không tạo liên kết nguồn giả. Liên kết gốc chỉ xuất hiện nếu có trong dữ liệu đầu vào.'],
+['Source review records','Bản ghi đánh giá nguồn'],['Expand any record to inspect its exact text and ID. Insights link to these records where available.','Mở rộng bản ghi để xem nội dung và mã chính xác. Khi có thể, các nhận định sẽ liên kết tới bản ghi tương ứng.'],
+['Show all reviews','Hiện tất cả đánh giá'],['Show fewer reviews','Thu gọn đánh giá'],
+['Counts are calculated from distinct review IDs. Review text and ratings are not generated by the summarizer.','Số lượng được tính từ các mã đánh giá riêng biệt. Nội dung và điểm đánh giá không được tạo bởi công cụ tóm tắt.'],
+['Evidence before assumptions.','Bằng chứng trước khi kết luận.'],
+['Total reviews','Tổng số đánh giá'],['Distinct records in dataset','Số bản ghi riêng biệt trong dữ liệu'],
+['Average rating','Điểm đánh giá trung bình'],['reviews with numeric ratings','đánh giá có điểm số'],
+['Positive reviews','Đánh giá tích cực'],['of dataset','trong bộ dữ liệu'],['Potential concerns','Vấn đề tiềm ẩn'],['Issue counts may overlap','Số lượng vấn đề có thể trùng lặp'],
+['Positive','Tích cực'],['Neutral','Trung lập'],['Negative','Tiêu cực'],
+['Evidence-based overview','Tổng quan dựa trên bằng chứng'],['Main strengths','Điểm mạnh chính'],['Main weaknesses','Điểm yếu chính'],
+['No recurring strength was identified by the local rules.','Không tìm thấy điểm mạnh lặp lại theo quy tắc cục bộ.'],
+['No recurring issue was detected by the local rules. This does not prove that no issues exist.','Không phát hiện vấn đề lặp lại theo quy tắc cục bộ. Điều này không chứng minh rằng không có vấn đề nào.'],
+['Strength','Điểm mạnh'],['Potential concern','Vấn đề tiềm ẩn'],['Higher-priority signal','Dấu hiệu cần ưu tiên'],['Low-priority signal','Dấu hiệu ưu tiên thấp'],['Moderate signal','Dấu hiệu mức trung bình'],
+['No matching source excerpts available.','Không có trích đoạn nguồn phù hợp.'],
+['Open source product ↗','Mở sản phẩm nguồn ↗'],['Some product details were not returned by the connected source.','Nguồn dữ liệu được kết nối không trả về một số thông tin sản phẩm.'],
+['Rating unavailable','Chưa có điểm đánh giá'],['Open original review ↗','Mở đánh giá gốc ↗'],
+['Fetching product & reviews…','Đang lấy sản phẩm và đánh giá…'],['Analysing…','Đang phân tích…'],
+['Paste a TikTok Shop product URL.','Vui lòng dán liên kết sản phẩm TikTok Shop.'],
+['Please enter a valid URL beginning with http:// or https://.','Vui lòng nhập URL hợp lệ bắt đầu bằng http:// hoặc https://.'],
+['Checking the configured TikTok Shop data connection. TrustLens will not use demo data for this link.','Đang kiểm tra kết nối dữ liệu TikTok Shop đã cấu hình. TrustLens sẽ không dùng dữ liệu demo cho liên kết này.'],
+['The source returned no review text for this product. No sample data was substituted.','Nguồn không trả về nội dung đánh giá cho sản phẩm này. Không có dữ liệu mẫu nào được thay thế vào.'],
+['The source returned no usable review text.','Nguồn không trả về nội dung đánh giá có thể sử dụng.'],
+['Analysis complete. Counts were calculated by TrustLens from the supplied records.','Phân tích hoàn tất. TrustLens đã tính số liệu từ các bản ghi được cung cấp.'],
+['Analysis failed: ','Phân tích thất bại: '],['Import failed: ','Nhập dữ liệu thất bại: '],
+['Imported ','Đã nhập '],[' review records from ',' bản ghi đánh giá từ '],['. Click “Analyse pasted/imported reviews” to continue.','. Bấm “Phân tích đánh giá đã dán/nhập” để tiếp tục.'],
+['CSV needs a header and at least one review row.','Tệp CSV cần có dòng tiêu đề và ít nhất một dòng đánh giá.'],
+['No review text found. Use a text/review/content column or JSON review objects.','Không tìm thấy nội dung đánh giá. Hãy dùng cột text/review/content hoặc các đối tượng đánh giá trong JSON.'],
+['Paste at least one review or choose a CSV/JSON file before analysing.','Vui lòng dán ít nhất một đánh giá hoặc chọn tệp CSV/JSON trước khi phân tích.'],
+['No valid review text found. Each non-empty line should contain one review.','Không tìm thấy nội dung đánh giá hợp lệ. Mỗi dòng không trống cần chứa một đánh giá.'],
+['Processing ','Đang xử lý '],[' review records locally…',' bản ghi đánh giá cục bộ…'],
+['Live source data — TikTok API','Dữ liệu nguồn trực tiếp — API TikTok'],['USER-PROVIDED REVIEW TEXT','NỘI DUNG ĐÁNH GIÁ DO NGƯỜI DÙNG CUNG CẤP'],['IMPORTED DATASET','BỘ DỮ LIỆU ĐÃ NHẬP'],['DEMO DATA — SYNTHETIC REVIEWS, NOT REAL CUSTOMER REVIEWS','DỮ LIỆU DEMO — ĐÁNH GIÁ TỔNG HỢP, KHÔNG PHẢI ĐÁNH GIÁ KHÁCH HÀNG THẬT'],
+['LIVE SOURCE DATA — TIKTOK API','DỮ LIỆU NGUỒN TRỰC TIẾP — API TIKTOK'],
+['Summary based on user-provided review text.','Tóm tắt dựa trên nội dung đánh giá do người dùng cung cấp.'],
+['Summary based on recurring patterns in the supplied review text.','Tóm tắt dựa trên các xu hướng lặp lại trong nội dung đánh giá được cung cấp.'],
+['Rule-based interpretation · TikTok source','Diễn giải theo quy tắc · Nguồn TikTok'],
+['AI interpretation + locally verified counts · TikTok source','Diễn giải bằng AI + số liệu được xác minh cục bộ · Nguồn TikTok'],
+['Gemini interpretation + locally verified counts','Diễn giải bằng Gemini + số liệu được xác minh cục bộ'],
+['Rule-based analysis · Counts computed from source records','Phân tích theo quy tắc · Số liệu được tính từ bản ghi nguồn'],
+['This dataset contains ','Bộ dữ liệu này có '],[' distinct review records with an average rating of ',' bản ghi đánh giá riêng biệt với điểm trung bình là '],
+['of ','trên '],[' reviews (',' đánh giá ('],[' IDs: ',' Mã: '],['Supporting review IDs: ','Mã đánh giá hỗ trợ: '],
+['Counts are computed locally. ','Số liệu được tính cục bộ. '],
+['Potential negative feedback','Phản hồi tiêu cực tiềm ẩn'],['Delivery delays','Giao hàng chậm'],['Clear sound','Âm thanh rõ'],['Comfortable fit','Đeo thoải mái'],['Color payoff','Khả năng lên màu'],['Smooth texture','Kết cấu mịn'],['Comfortable wear','Thoải mái khi sử dụng'],
+['Device fails to charge after a few days','Thiết bị không sạc được sau vài ngày'],['Rapid battery drain','Pin tụt nhanh'],['Intermittent charging','Sạc chập chờn'],
+['A small number of delivery-delay mentions may reflect fulfilment timing rather than product quality.','Một số ít đề cập về giao hàng chậm có thể liên quan đến thời gian vận chuyển hơn là chất lượng sản phẩm.'],
+['Repeated charging failure is a product-functionality concern worth checking against warranty and return terms.','Lỗi sạc lặp lại là vấn đề về chức năng sản phẩm cần được kiểm tra theo điều kiện bảo hành và đổi trả.'],
+['Multiple distinct reviews mention battery life dropping faster than expected.','Nhiều đánh giá riêng biệt đề cập pin tụt nhanh hơn mong đợi.'],
+['Charging that works inconsistently may affect everyday use.','Tình trạng sạc không ổn định có thể ảnh hưởng đến việc sử dụng hằng ngày.'],
+['Review the cited records in context.','Hãy xem các bản ghi được trích dẫn trong ngữ cảnh.'],
+['No recurring issue was detected by the current local rules. This is not a guarantee that the product has no problems.','Quy tắc cục bộ hiện tại không phát hiện vấn đề lặp lại. Điều này không đảm bảo sản phẩm không có vấn đề.'],
+['Observed counts are computed locally. ','Số liệu quan sát được tính cục bộ. '],
+['Rule-based pattern matching is not a validated fake-review detector. Sentiment for manually supplied text is a heuristic; inspect source reviews before making decisions.','Đối sánh mẫu theo quy tắc không phải công cụ phát hiện đánh giá giả đã được kiểm chứng. Phân tích cảm xúc của văn bản nhập thủ công chỉ mang tính ước lượng; hãy kiểm tra đánh giá nguồn trước khi quyết định.'],
+['Repeated complaints are a signal to investigate—not proof of fraud or a confirmed safety hazard.','Các phàn nàn lặp lại là dấu hiệu cần kiểm tra, không phải bằng chứng gian lận hay nguy cơ an toàn đã được xác nhận.'],
+['Potential concern','Vấn đề tiềm ẩn'],['Strength','Điểm mạnh'],['VERIFIABLE FIELDS ONLY','CHỈ CÁC TRƯỜNG CÓ THỂ XÁC MINH'],
+['← Back to input','← Quay lại nhập liệu'],['REVIEW INTELLIGENCE','PHÂN TÍCH ĐÁNH GIÁ']
+];
+const viMap = new Map(viText);
+function translateValue(value, lang) {
+  if (lang === 'en') return value;
+  let out = value;
+  // Replace longer phrases first to avoid partial matches overriding full translations.
+  for (const [en, vi] of [...viMap.entries()].sort((a,b)=>b[0].length-a[0].length)) {
+    if (out.includes(en)) out = out.split(en).join(vi);
+  }
+  return out;
+}
+function setLanguage(lang) {
+  currentLanguage = lang;
+  document.documentElement.lang = lang;
+  document.title = lang === 'vi' ? 'TrustLens — Phân tích đánh giá' : 'TrustLens — Review Analyzer';
+  document.querySelectorAll('body *').forEach(el => {
+    if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE') return;
+    for (const attr of ['placeholder','aria-label','title']) {
+      if (el.hasAttribute(attr)) {
+        const key = 'data-original-' + attr;
+        if (!el.hasAttribute(key)) el.setAttribute(key, el.getAttribute(attr));
+        el.setAttribute(attr, translateValue(el.getAttribute(key), lang));
+      }
+    }
+  });
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  const textNodes = [];
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (node.parentElement && !['SCRIPT','STYLE'].includes(node.parentElement.tagName)) textNodes.push(node);
+  }
+  textNodes.forEach(node => {
+    if (node.__trustlensOriginal === undefined) node.__trustlensOriginal = node.nodeValue;
+    node.nodeValue = translateValue(node.__trustlensOriginal, lang);
+  });
+  $('languageToggle').textContent = lang === 'en' ? 'VI | EN' : 'EN | VI';
+  $('languageToggle').setAttribute('aria-label', lang === 'en' ? 'Chuyển sang tiếng Việt' : 'Switch to English');
+}
+$('languageToggle').addEventListener('click', () => setLanguage(currentLanguage === 'en' ? 'vi' : 'en'));
+// Apply the chosen language after each render, including dynamically generated dashboard content.
+const originalRenderDashboard = renderDashboard;
+renderDashboard = function(data) {
+  originalRenderDashboard(data);
+  setLanguage(currentLanguage);
+};
+const originalRenderReviewList = renderReviewList;
+renderReviewList = function() {
+  originalRenderReviewList();
+  setLanguage(currentLanguage);
+};
+
+</script></body></html>

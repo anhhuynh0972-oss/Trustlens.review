@@ -1,0 +1,296 @@
+{
+  "id": "matte_lip_cream_y",
+  "name": "Matte Lip Cream Y",
+  "kind": "synthetic_demo",
+  "description": "Positive example: color payoff, texture, and comfortable wear; one minor delivery-delay mention.",
+  "reviews": [
+    {
+      "id": "ML-001",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The color payoff is rich in one swipe and the texture feels smooth on my lips.",
+      "source_url": null
+    },
+    {
+      "id": "ML-002",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Beautiful color payoff with a lightweight texture and comfortable wear.",
+      "source_url": null
+    },
+    {
+      "id": "ML-003",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The texture is creamy, the color looks even, and it feels comfortable for hours.",
+      "source_url": null
+    },
+    {
+      "id": "ML-004",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Good pigment without feeling too heavy; comfortable for everyday wear.",
+      "source_url": null
+    },
+    {
+      "id": "ML-005",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The color payoff is strong and the formula feels soft rather than drying.",
+      "source_url": null
+    },
+    {
+      "id": "ML-006",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The color payoff is rich in one swipe and the texture feels smooth on my lips.",
+      "source_url": null
+    },
+    {
+      "id": "ML-007",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Beautiful color payoff with a lightweight texture and comfortable wear.",
+      "source_url": null
+    },
+    {
+      "id": "ML-008",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The texture is creamy, the color looks even, and it feels comfortable for hours.",
+      "source_url": null
+    },
+    {
+      "id": "ML-009",
+      "rating": 4,
+      "sentiment": "positive",
+      "text": "Good pigment without feeling too heavy; comfortable for everyday wear.",
+      "source_url": null
+    },
+    {
+      "id": "ML-010",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The color payoff is strong and the formula feels soft rather than drying.",
+      "source_url": null
+    },
+    {
+      "id": "ML-011",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The color payoff is rich in one swipe and the texture feels smooth on my lips.",
+      "source_url": null
+    },
+    {
+      "id": "ML-012",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Beautiful color payoff with a lightweight texture and comfortable wear.",
+      "source_url": null
+    },
+    {
+      "id": "ML-013",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The texture is creamy, the color looks even, and it feels comfortable for hours.",
+      "source_url": null
+    },
+    {
+      "id": "ML-014",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Good pigment without feeling too heavy; comfortable for everyday wear.",
+      "source_url": null
+    },
+    {
+      "id": "ML-015",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The color payoff is strong and the formula feels soft rather than drying.",
+      "source_url": null
+    },
+    {
+      "id": "ML-016",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The color payoff is rich in one swipe and the texture feels smooth on my lips.",
+      "source_url": null
+    },
+    {
+      "id": "ML-017",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Beautiful color payoff with a lightweight texture and comfortable wear.",
+      "source_url": null
+    },
+    {
+      "id": "ML-018",
+      "rating": 4,
+      "sentiment": "positive",
+      "text": "Great color payoff and comfortable texture; delivery took one extra day.",
+      "source_url": null
+    },
+    {
+      "id": "ML-019",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Good pigment without feeling too heavy; comfortable for everyday wear.",
+      "source_url": null
+    },
+    {
+      "id": "ML-020",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The color payoff is strong and the formula feels soft rather than drying.",
+      "source_url": null
+    },
+    {
+      "id": "ML-021",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The color payoff is rich in one swipe and the texture feels smooth on my lips.",
+      "source_url": null
+    },
+    {
+      "id": "ML-022",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Beautiful color payoff with a lightweight texture and comfortable wear.",
+      "source_url": null
+    },
+    {
+      "id": "ML-023",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The texture is creamy, the color looks even, and it feels comfortable for hours.",
+      "source_url": null
+    },
+    {
+      "id": "ML-024",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Good pigment without feeling too heavy; comfortable for everyday wear.",
+      "source_url": null
+    },
+    {
+      "id": "ML-025",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The color payoff is strong and the formula feels soft rather than drying.",
+      "source_url": null
+    },
+    {
+      "id": "ML-026",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The color payoff is rich in one swipe and the texture feels smooth on my lips.",
+      "source_url": null
+    },
+    {
+      "id": "ML-027",
+      "rating": 4,
+      "sentiment": "positive",
+      "text": "Beautiful color payoff with a lightweight texture and comfortable wear.",
+      "source_url": null
+    },
+    {
+      "id": "ML-028",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The texture is creamy, the color looks even, and it feels comfortable for hours.",
+      "source_url": null
+    },
+    {
+      "id": "ML-029",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Good pigment without feeling too heavy; comfortable for everyday wear.",
+      "source_url": null
+    },
+    {
+      "id": "ML-030",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The color payoff is strong and the formula feels soft rather than drying.",
+      "source_url": null
+    },
+    {
+      "id": "ML-031",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The color payoff is rich in one swipe and the texture feels smooth on my lips.",
+      "source_url": null
+    },
+    {
+      "id": "ML-032",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Beautiful color payoff with a lightweight texture and comfortable wear.",
+      "source_url": null
+    },
+    {
+      "id": "ML-033",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The texture is creamy, the color looks even, and it feels comfortable for hours.",
+      "source_url": null
+    },
+    {
+      "id": "ML-034",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "Good pigment without feeling too heavy; comfortable for everyday wear.",
+      "source_url": null
+    },
+    {
+      "id": "ML-035",
+      "rating": 5,
+      "sentiment": "positive",
+      "text": "The color payoff is strong and the formula feels soft rather than drying.",
+      "source_url": null
+    },
+    {
+      "id": "ML-036",
+      "rating": 4,
+      "sentiment": "positive",
+      "text": "The color payoff is rich in one swipe and the texture feels smooth on my lips.",
+      "source_url": null
+    },
+    {
+      "id": "ML-037",
+      "rating": 4,
+      "sentiment": "neutral",
+      "text": "The shade is fine and the texture is average; it meets basic expectations.",
+      "source_url": null
+    },
+    {
+      "id": "ML-038",
+      "rating": 4,
+      "sentiment": "neutral",
+      "text": "The shade is fine and the texture is average; it meets basic expectations.",
+      "source_url": null
+    },
+    {
+      "id": "ML-039",
+      "rating": 4,
+      "sentiment": "negative",
+      "text": "The parcel arrived later than expected, but the product itself is okay.",
+      "source_url": null
+    },
+    {
+      "id": "ML-040",
+      "rating": 4,
+      "sentiment": "negative",
+      "text": "The texture felt a little drier than I prefer, though the color payoff was good.",
+      "source_url": null
+    }
+  ],
+  "expected_review_count": 40,
+  "seller": null,
+  "expected_rating_average": 4.8,
+  "sentiment_counts": {
+    "positive": 36,
+    "neutral": 2,
+    "negative": 2
+  }
+}
