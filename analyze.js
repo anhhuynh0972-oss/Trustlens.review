@@ -18,7 +18,8 @@ function send(res, status, body) {
 
 async function callGemini(prompt, schema, deps) {
   const doFetch = (deps && deps.fetch) || fetch;
-  const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+  // Default model must be generally available to new keys; 2.5 models are limited to earlier users.
+  const model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
   const r = await doFetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': process.env.GEMINI_API_KEY },
