@@ -7,8 +7,12 @@ const { BATCH_SCHEMA, validateBatchResult, CATEGORIES } = require('../analysis.j
 const MAX_BATCH_REVIEWS = 100;
 const MAX_BATCH_CHARS = 60000;
 const MAX_FINDINGS = 60;
-const GEMINI_TIMEOUT_MS = 22000;
+const CALL_TIMEOUT_MS = 40000;  // Gemini 3 models think before answering; 20 reviews can take >20 s
+const BUDGET_MS = 55000;        // Vercel maxDuration for this function is 60 s
+const CHUNK = 15;               // reviews per Gemini call; chunks of a batch run in parallel
+const PARALLEL = 6;               // the browser sends up to 80 reviews per batch: 6 chunks of 15 in one round
 const ATTEMPTS = 2;
+let thinkingLow = true;         // Gemini 3: thinkingLevel "low" cuts latency; dropped if the model rejects it
 
 function send(res, status, body) {
   res.setHeader('Cache-Control', 'no-store');
@@ -16,19 +20,25 @@ function send(res, status, body) {
   return res.status(status).json(body);
 }
 
-async function callGemini(prompt, schema, deps) {
+async function callGemini(prompt, schema, deps, timeoutMs) {
   const doFetch = (deps && deps.fetch) || fetch;
- const model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+  // Default model must be generally available to new keys; 2.5 models are limited to earlier users.
+  const model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
   const r = await doFetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': process.env.GEMINI_API_KEY },
-    body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { responseMimeType: 'application/json', responseSchema: schema, temperature: 0.1 } }),
-    signal: AbortSignal.timeout(GEMINI_TIMEOUT_MS)
+    body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: Object.assign({ responseMimeType: 'application/json', responseSchema: schema, temperature: 0.1 }, thinkingLow ? { thinkingConfig: { thinkingLevel: 'low' } } : {}) }),
+    signal: AbortSignal.timeout(Math.max(1000, Math.min(CALL_TIMEOUT_MS, timeoutMs || CALL_TIMEOUT_MS)))
   });
   if (!r.ok) {
+    let b = {}; try { b = JSON.parse(await r.text()) || {}; } catch (e) { /* no JSON body */ }
+    const msg = String((b.error && b.error.message) || '');
+    // A model without configurable thinking rejects thinkingConfig: retry once without it.
+    if (r.status === 400 && thinkingLow && /thinking/i.test(msg)) { thinkingLow = false; return callGemini(prompt, schema, deps, timeoutMs); }
     const err = new Error('gemini_http_' + r.status);
     err.status = r.status;
-    try { const b = await r.json(); err.googleStatus = String((b.error && b.error.status) || ''); err.keyProblem = /api key/i.test(String(b.error && b.error.message)); } catch (e) { /* no body */ }
+    err.googleStatus = String((b.error && b.error.status) || '');
+    err.keyProblem = /api key/i.test(msg);
     throw err;
   }
   const payload = await r.json();
@@ -136,13 +146,16 @@ function validateReport(ai, inp) {
   };
 }
 
-async function withRetries(fn) {
+// Retries only while there is enough of the time budget left for another full attempt.
+async function withRetries(fn, deadline) {
   let lastErr;
   for (let i = 0; i < ATTEMPTS; i++) {
-    try { return await fn(); }
+    const left = (deadline || Date.now() + BUDGET_MS) - Date.now();
+    if (i > 0 && left < 15000) break;
+    try { return await fn(left); }
     catch (e) {
       lastErr = e;
-      if (e && (e.status === 400 || e.status === 401 || e.status === 403)) break; // not retryable
+      if (e && (e.status === 400 || e.status === 401 || e.status === 403 || e.status === 404)) break; // not retryable
     }
   }
   throw lastErr;
@@ -172,7 +185,8 @@ async function handler(req, res, deps) {
     const inp = cleanReportInput(body);
     if (!inp.findings.length) return send(res, 400, { error: 'no_findings', message: 'No findings with supporting reviews to report on.' });
     try {
-      const report = await withRetries(async () => validateReport(await callGemini(reportPrompt(inp, language), REPORT_SCHEMA, deps), inp));
+      const deadline = Date.now() + BUDGET_MS;
+      const report = await withRetries(async left => validateReport(await callGemini(reportPrompt(inp, language), REPORT_SCHEMA, deps, left), inp), deadline);
       return send(res, 200, { ok: true, report });
     } catch (e) { return aiErrorResponse(res, e); }
   }
@@ -186,12 +200,13 @@ async function handler(req, res, deps) {
     const unknowns = Array.isArray(body.unknowns) ? body.unknowns.map(String).filter(u => /^[a-z_]{1,30}$/.test(u)).slice(0, 8) : [];
     if (!findings.length && !(counts.positive + counts.neutral + counts.negative)) return send(res, 400, { error: 'no_findings', message: 'Nothing to summarise.' });
     try {
-      const out = await withRetries(async () => {
-        const ai = await callGemini(summaryPrompt({ findings, analyzed, retrieved, stance, counts, unknowns }, language), SUMMARY_SCHEMA, deps);
+      const deadline = Date.now() + BUDGET_MS;
+      const out = await withRetries(async left => {
+        const ai = await callGemini(summaryPrompt({ findings, analyzed, retrieved, stance, counts, unknowns }, language), SUMMARY_SCHEMA, deps, left);
         if (!ai || typeof ai.summary !== 'string' || !ai.summary.trim()) throw new Error('schema');
         const list = k => (Array.isArray(ai[k]) ? ai[k] : []).map(s => String(s).slice(0, 300)).slice(0, 8);
         return { summary: ai.summary.slice(0, 1500), positives: list('positives'), negatives: list('negatives'), recurring_complaints: list('recurring_complaints'), quality_insights: list('quality_insights'), before_buying: list('before_buying'), decision_rationale: String(ai.decision_rationale || '').slice(0, 1200) };
-      });
+      }, deadline);
       return send(res, 200, { ok: true, summary: out });
     } catch (e) { return aiErrorResponse(res, e); }
   }
@@ -203,12 +218,32 @@ async function handler(req, res, deps) {
   const reviews = input.map(r => ({ id: String((r && r.id) || '').slice(0, 100), text: String((r && r.text) || '').slice(0, 2000), rating: r && r.rating != null ? Number(r.rating) || null : null })).filter(r => r.id && r.text.trim());
   if (!reviews.length) return send(res, 400, { error: 'no_reviews', message: 'No usable review text.' });
   if (reviews.reduce((s, r) => s + r.text.length, 0) > MAX_BATCH_CHARS) return send(res, 413, { error: 'batch_too_large', message: 'Batch text too long.' });
-  const ids = reviews.map(r => r.id);
-  try {
-    const result = await withRetries(async () => validateBatchResult(await callGemini(batchPrompt(reviews, language), BATCH_SCHEMA, deps), ids));
-    return send(res, 200, { ok: true, analyzedIds: ids, ...result });
-  } catch (e) { return aiErrorResponse(res, e); }
+  // Split into small chunks analysed in parallel, so a large batch takes about as long as one chunk.
+  const deadline = Date.now() + BUDGET_MS;
+  const chunks = [];
+  for (let i = 0; i < reviews.length; i += CHUNK) chunks.push(reviews.slice(i, i + CHUNK));
+  const results = new Array(chunks.length);
+  let next = 0;
+  const worker = async () => {
+    while (next < chunks.length) {
+      const i = next++, part = chunks[i], partIds = part.map(r => r.id);
+      try { results[i] = { ok: true, ids: partIds, ...(await withRetries(async left => validateBatchResult(await callGemini(batchPrompt(part, language), BATCH_SCHEMA, deps, left), partIds), deadline)) }; }
+      catch (e) { results[i] = { ok: false, ids: partIds, error: e }; }
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(PARALLEL, chunks.length) }, worker));
+  const done = results.filter(r => r.ok), failed = results.filter(r => !r.ok);
+  if (!done.length) return aiErrorResponse(res, failed[0].error);
+  // Partial success is reported honestly: only analysed IDs are listed, the rest come back as failedIds.
+  return send(res, 200, {
+    ok: true,
+    analyzedIds: done.flatMap(r => r.ids),
+    failedIds: failed.flatMap(r => r.ids),
+    findings: done.flatMap(r => r.findings),
+    sentiment: Object.assign({}, ...done.map(r => r.sentiment))
+  });
 }
 
 module.exports = (req, res) => handler(req, res);
 module.exports.handler = handler;
+module.exports._resetForTests = () => { thinkingLow = true; };
