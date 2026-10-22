@@ -1,0 +1,1936 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TrustLens — Review Analyzer</title>
+<meta name="description" content="TrustLens: AI-assisted TikTok Shop review and credibility checks for Vietnamese Gen Z shoppers.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Dancing+Script:wght@600;700&display=swap">
+<style>
+/* Layout: airy blush landing page whose hero is a magnifying lens over a real review, plus a sidebar + panels analysis dashboard. One light look by choice. */
+:root {
+  color-scheme: light;
+  --red: #F52D46;        /* brand red: accents, gradients */
+  --red-ink: #D0102D;    /* deeper red for button fills and small text (AA on white) */
+  --pink: #FCE8EC;       /* soft pink surfaces */
+  --blush: #FFF7F9;      /* page glow tint */
+  --white: #FFFFFF;
+  --ink: #171717;        /* charcoal text */
+  --ink-2: #574C50;      /* secondary text, warm-biased grey */
+  --ink-3: #85777B;      /* captions */
+  --line: #F2DCE1;       /* thin pink borders */
+  --line-2: #ECE4E6;
+  --pos: #11795A; --pos-bg: #E5F3ED;
+  --mix: #9A5800; --mix-bg: #FCF0DE;
+  --neg: #A61D33; --neg-bg: #FBE6EA;
+  --unc: #6F6669; --unc-bg: #F1EDEE;
+  --flag: #A84B05; --flag-bg: #FEF1E0;
+  --font: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --grad: linear-gradient(100deg, #F52D46 0%, #FF5C74 55%, #FF8A9B 100%);
+  --btn: linear-gradient(180deg, #E8243F 0%, #D0102D 100%);
+  --shadow: 0 1px 2px rgba(23,23,23,.04), 0 14px 34px -16px rgba(208,16,45,.22);
+  --shadow-lg: 0 2px 6px rgba(23,23,23,.05), 0 30px 60px -24px rgba(208,16,45,.30);
+  --r-xl: 28px; --r-lg: 20px; --r-md: 14px; --r-sm: 10px;
+  --step--1: .8125rem; --step-0: 1rem; --step-1: 1.125rem; --step-2: 1.375rem; --step-3: 1.875rem; --step-4: clamp(2.1rem, 4.2vw, 3rem); --step-5: clamp(2.7rem, 6.4vw, 4.9rem);
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--white); color: var(--ink); font-family: var(--font); font-size: var(--step-0); line-height: 1.6; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--white); }
+h1, h2, h3, h4 { margin: 0; line-height: 1.15; text-wrap: balance; letter-spacing: -0.02em; }
+p { margin: 0; }
+a { color: inherit; }
+button, input, textarea, select { font: inherit; color: inherit; }
+img, svg { max-width: 100%; }
+:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; border-radius: 6px; }
+.wrap { max-width: 1200px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+@media (min-width: 720px) { .wrap { padding-left: max(32px, env(safe-area-inset-left, 0px)); padding-right: max(32px, env(safe-area-inset-right, 0px)); } }
+.grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Buttons and fields */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border: 0; border-radius: 999px; padding: .8rem 1.35rem; font-weight: 700; font-size: .95rem; cursor: pointer; text-decoration: none; white-space: nowrap; transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease; }
+.btn-primary { background: var(--btn); color: var(--white); box-shadow: 0 8px 20px -8px rgba(208,16,45,.6); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 24px -10px rgba(208,16,45,.7); }
+.btn-ghost { background: var(--white); color: var(--ink); border: 1px solid var(--line); }
+.btn-ghost:hover { border-color: var(--red); color: var(--red-ink); }
+.btn-sm { padding: .5rem .9rem; font-size: .85rem; }
+.btn-link { background: none; border: 0; padding: 0; color: var(--red-ink); font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; font-size: .9rem; }
+.field-label { display: block; font-size: var(--step--1); font-weight: 600; color: var(--ink-2); margin-bottom: .4rem; }
+.input, .textarea { width: 100%; border: 1px solid var(--line-2); background: var(--white); border-radius: var(--r-md); padding: .8rem 1rem; font-size: .95rem; transition: border-color .15s ease, box-shadow .15s ease; }
+.input:focus, .textarea:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 4px rgba(245,45,70,.14); }
+.textarea { resize: vertical; min-height: 140px; line-height: 1.5; }
+.field-error { color: var(--neg); font-size: var(--step--1); font-weight: 600; margin-top: .45rem; }
+.pill { display: inline-flex; align-items: center; gap: .35rem; border-radius: 999px; padding: .2rem .6rem; font-size: .75rem; font-weight: 600; line-height: 1.5; white-space: nowrap; }
+.pill-demo { background: var(--ink); color: var(--white); }
+.pill-soft { background: var(--pink); color: var(--red-ink); }
+.pill-line { border: 1px dashed var(--ink-3); color: var(--ink-2); }
+
+/* Header */
+.site-header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: rgba(255,255,255,.88); backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px); border-bottom: 1px solid transparent; transition: border-color .2s ease; }
+.site-header.scrolled { border-bottom-color: var(--line); }
+.header-row { display: flex; align-items: center; gap: 1rem; height: 68px; }
+.logo { display: inline-flex; align-items: center; gap: .55rem; font-weight: 800; font-size: 1.2rem; letter-spacing: -0.03em; text-decoration: none; }
+.logo svg { width: 30px; height: 30px; flex: none; }
+.nav { display: flex; gap: .2rem; margin-left: auto; }
+.nav a { text-decoration: none; font-size: .9rem; font-weight: 500; color: var(--ink-2); padding: .45rem .7rem; border-radius: 999px; }
+.nav a:hover { color: var(--ink); background: var(--blush); }
+.header-actions { display: flex; align-items: center; gap: .6rem; }
+.lang { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--white); }
+.lang button { border: 0; background: none; border-radius: 999px; padding: .25rem .6rem; font-size: .78rem; font-weight: 700; color: var(--ink-3); cursor: pointer; }
+.lang button[aria-pressed="true"] { background: var(--pink); color: var(--red-ink); }
+.menu-btn { display: none; border: 1px solid var(--line); background: var(--white); border-radius: 12px; width: 42px; height: 42px; cursor: pointer; align-items: center; justify-content: center; }
+@media (max-width: 1240px) {
+  .nav { position: absolute; top: 68px; left: 0; right: 0; flex-direction: column; background: var(--white); border-bottom: 1px solid var(--line); padding: .5rem max(16px, env(safe-area-inset-right, 0px)) 1rem max(16px, env(safe-area-inset-left, 0px)); box-shadow: var(--shadow); display: none; }
+  .nav.open { display: flex; }
+  .nav a { padding: .75rem .8rem; font-size: 1rem; }
+  .menu-btn { display: inline-flex; }
+  .header-actions { margin-left: auto; }
+}
+@media (max-width: 460px) { .header-actions .btn-start { display: none; } }
+@media (max-width: 340px) { .header-row { gap: .4rem; } .logo { font-size: 1rem; gap: .35rem; } .logo svg { width: 24px; height: 24px; } .header-actions { gap: .3rem; } .lang button { padding: .2rem .45rem; } .menu-btn { width: 38px; height: 38px; } }
+
+/* Sections */
+section { scroll-margin-top: 84px; }
+.section { padding-block: clamp(4rem, 9vw, 7rem); }
+.section-head { max-width: 680px; display: grid; gap: .9rem; margin-bottom: clamp(2rem, 4vw, 3rem); }
+.section-head h2 { font-size: var(--step-4); font-weight: 800; }
+.section-head p { color: var(--ink-2); font-size: var(--step-1); }
+.kicker { font-weight: 700; color: var(--red-ink); font-size: .95rem; }
+
+/* Hero */
+.hero { position: relative; overflow: hidden; padding-block: clamp(2.5rem, 6vw, 4.5rem) clamp(3.5rem, 7vw, 5.5rem); background:
+  radial-gradient(600px 380px at 85% 20%, rgba(245,45,70,.13), transparent 70%),
+  radial-gradient(520px 340px at 8% 90%, rgba(252,232,236,.9), transparent 70%),
+  var(--white); }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: clamp(2rem, 5vw, 4rem); align-items: center; }
+.hero h1 { font-size: var(--step-5); font-weight: 800; letter-spacing: -0.045em; line-height: 1.02; }
+.hero-sub { margin-top: 1.25rem; max-width: 34rem; color: var(--ink-2); font-size: var(--step-1); }
+.hero-form { margin-top: 1.75rem; max-width: 36rem; }
+.url-row { display: flex; gap: .5rem; background: var(--white); border: 1px solid var(--line); border-radius: 999px; padding: 6px; box-shadow: var(--shadow); }
+.url-row:focus-within { border-color: var(--red); box-shadow: 0 0 0 4px rgba(245,45,70,.12), var(--shadow); }
+.url-row .icon { flex: none; display: grid; place-items: center; width: 40px; color: var(--ink-3); }
+.url-row input { flex: 1; min-width: 0; border: 0; outline: none; background: none; font-size: .95rem; }
+.hero-alt { margin-top: .9rem; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem 1rem; }
+.hero-note { font-size: var(--step--1); color: var(--ink-3); }
+.hero-manual { margin-top: 1rem; display: grid; gap: .6rem; }
+.hero-manual .actions { display: flex; justify-content: flex-start; }
+.feature-tags { margin-top: 1.75rem; display: flex; flex-wrap: wrap; gap: .5rem; }
+.feature-tags span { display: inline-flex; align-items: center; gap: .45rem; background: var(--white); border: 1px solid var(--line); border-radius: 999px; padding: .4rem .85rem .4rem .5rem; font-size: .85rem; font-weight: 600; }
+.feature-tags i { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--pink); color: var(--red-ink); }
+@media (max-width: 900px) {
+  .hero-grid { grid-template-columns: minmax(0, 1fr); }
+  .url-row { border-radius: var(--r-lg); flex-wrap: wrap; }
+  .url-row input { padding: .55rem 0; }
+  .url-row .btn { flex: 1 1 100%; }
+}
+
+/* Hero mockup with the lens */
+.mock { position: relative; max-width: 500px; margin-inline: auto; width: 100%; padding: 1.2rem 0 5.5rem; }
+.mock-card { background: var(--white); border: 1px solid var(--line); border-radius: var(--r-xl); box-shadow: var(--shadow-lg); }
+.mock-product { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 1rem; padding: 1rem; align-items: center; width: 86%; }
+.mock-product .thumb { aspect-ratio: 1; border-radius: var(--r-lg); background: linear-gradient(160deg, var(--pink), #FFF); display: grid; place-items: center; padding: 12px; }
+.mock-product h3 { font-size: 1.05rem; font-weight: 700; }
+.mock-meta { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .5rem; align-items: center; color: var(--ink-3); font-size: .8rem; }
+.mock-analysis { margin: -1.2rem 0 0 auto; width: 84%; padding: 1.15rem 1.2rem 1.2rem; position: relative; display: grid; gap: .85rem; }
+.mock-analysis h4 { font-size: .95rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
+.bar { display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: var(--unc-bg); gap: 2px; }
+.bar span { display: block; height: 100%; }
+.bar .p { background: var(--pos); } .bar .m { background: #E29A2D; } .bar .n { background: var(--neg); } .bar .u { background: #CFC6C9; }
+.legend { display: flex; flex-wrap: wrap; gap: .3rem .9rem; font-size: .78rem; color: var(--ink-2); }
+.legend b { font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: .3rem; vertical-align: 1px; }
+.mock-rows { display: grid; gap: .45rem; font-size: .82rem; }
+.mock-rows div { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; }
+.mock-rows .lbl { color: var(--ink-3); min-width: 8.5rem; }
+.chip { display: inline-flex; align-items: center; gap: .3rem; border-radius: 8px; padding: .15rem .5rem; font-size: .76rem; font-weight: 600; }
+.chip-pos { background: var(--pos-bg); color: var(--pos); }
+.chip-neg { background: var(--neg-bg); color: var(--neg); }
+.chip-mix { background: var(--mix-bg); color: var(--mix); }
+.chip-unc { background: var(--unc-bg); color: var(--unc); }
+.chip-flag { background: var(--flag-bg); color: var(--flag); }
+.mock-flag { display: flex; gap: .6rem; align-items: flex-start; background: var(--flag-bg); color: var(--flag); border-radius: var(--r-md); padding: .65rem .8rem; font-size: .8rem; font-weight: 600; line-height: 1.4; }
+.mock-flag svg { flex: none; margin-top: 1px; }
+.mock-review { position: absolute; left: -2%; bottom: 1.5rem; width: 62%; padding: .85rem 1rem; font-size: .82rem; line-height: 1.45; border-radius: var(--r-lg); }
+.mock-review .stars { color: #E9A100; letter-spacing: 1px; font-size: .75rem; }
+.mock-review mark { background: rgba(245,45,70,.16); color: inherit; border-radius: 4px; padding: 0 2px; }
+.lens { position: absolute; width: 132px; height: 132px; border-radius: 50%; left: 47%; bottom: -10px; background: rgba(255,255,255,.96); border: 7px solid var(--ink); box-shadow: 0 18px 30px -10px rgba(23,23,23,.35), inset 0 0 0 3px rgba(245,45,70,.25); display: grid; place-items: center; text-align: center; padding: 14px; overflow: visible; }
+.lens::after { content: ""; position: absolute; width: 18px; height: 64px; border-radius: 9px; background: var(--ink); right: -26px; bottom: -48px; transform: rotate(-45deg); }
+.lens p { font-size: 1.02rem; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; }
+.lens p mark { background: none; color: var(--red-ink); }
+.mock-caption { position: absolute; top: 0; right: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .lens { animation: lens-in .9s cubic-bezier(.2,.8,.2,1) .25s both; }
+  @keyframes lens-in { from { transform: translate(26px, 20px) scale(.9); } to { transform: none; } }
+}
+@media (max-width: 520px) {
+  .mock-product { width: 100%; grid-template-columns: 84px minmax(0,1fr); }
+  .mock-analysis { width: 100%; margin-top: .75rem; }
+  .mock-review { position: relative; width: 78%; left: 0; margin-top: .75rem; }
+  .lens { width: 108px; height: 108px; left: auto; right: 6%; bottom: 8px; }
+  .lens p { font-size: .85rem; }
+  .mock { padding-bottom: 1.5rem; }
+}
+
+/* Research */
+.research { background: linear-gradient(180deg, var(--white), var(--blush)); }
+.rs-sub { font-size: 1.05rem; font-weight: 750; margin: 2rem 0 .8rem; }
+.rs-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+.rs-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.rs-card { background: var(--white); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 1.2rem 1.3rem; display: grid; gap: .55rem; align-content: start; min-width: 0; }
+.rs-card p { color: var(--ink-2); font-size: .92rem; overflow-wrap: anywhere; }
+.rs-stat { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.02em; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.rs-card .rs-src { font-size: .78rem; color: var(--ink-3); border-top: 1px solid var(--line-2); padding-top: .5rem; }
+.rs-own { border-style: dashed; max-width: 60rem; }
+.map-table { border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; background: var(--white); }
+.map-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: .75rem 1.1rem; border-top: 1px solid var(--line-2); font-size: .9rem; color: var(--ink-2); }
+.map-row span { min-width: 0; overflow-wrap: anywhere; }
+.map-headrow { border-top: 0; background: var(--blush); font-weight: 700; color: var(--ink); font-size: .82rem; }
+.rs-list { padding-left: 1.2rem; display: grid; gap: .35rem; color: var(--ink-2); font-size: .92rem; max-width: 60rem; }
+.refs { padding-left: 1.2rem; display: grid; gap: .55rem; font-size: .85rem; color: var(--ink-2); max-width: 64rem; }
+.refs li { overflow-wrap: anywhere; padding-left: .2rem; }
+.refs a { color: var(--red-ink); }
+@media (max-width: 960px) { .rs-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .rs-grid, .rs-grid-2, .map-row { grid-template-columns: 1fr; } .map-row { gap: .3rem; } .map-headrow { display: none; } .map-row span:first-child { font-weight: 600; color: var(--ink); } }
+
+/* How it works */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.6rem 2.4rem; counter-reset: step; }
+.step { position: relative; background: var(--white); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 1.4rem 1.4rem 1.5rem; display: grid; gap: .7rem; align-content: start; min-width: 0; }
+.step-top { display: flex; align-items: center; justify-content: space-between; }
+.step-num { width: 38px; height: 38px; border-radius: 12px; background: var(--ink); color: var(--white); display: grid; place-items: center; font-weight: 800; font-size: .95rem; font-variant-numeric: tabular-nums; }
+.step-icon { width: 42px; height: 42px; border-radius: 50%; background: var(--pink); color: var(--red-ink); display: grid; place-items: center; }
+.step h3 { font-size: 1.08rem; font-weight: 700; }
+.step p { color: var(--ink-2); font-size: .92rem; }
+.step:last-child { background: var(--pink); border-color: #F5C9D2; }
+.step-arrow { position: absolute; top: 50%; right: -2.05rem; transform: translateY(-50%); width: 1.7rem; height: 1.7rem; color: var(--red); display: grid; place-items: center; }
+.step:nth-child(3n) .step-arrow, .step:last-child .step-arrow { display: none; }
+@media (max-width: 960px) {
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .step:nth-child(3n) .step-arrow { display: grid; }
+  .step:nth-child(2n) .step-arrow, .step:last-child .step-arrow { display: none; }
+}
+@media (max-width: 620px) {
+  .steps { grid-template-columns: minmax(0, 1fr); gap: 2.2rem; }
+  .step .step-arrow, .step:nth-child(2n) .step-arrow, .step:nth-child(3n) .step-arrow { display: grid; top: auto; bottom: -2.05rem; right: auto; left: 50%; transform: translateX(-50%) rotate(90deg); }
+  .step:last-child .step-arrow { display: none; }
+}
+
+/* Features */
+.features { background: var(--blush); }
+.feature-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+.feature { background: var(--white); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 1.5rem; display: grid; gap: .8rem; align-content: start; min-width: 0; }
+.feature-icon { width: 48px; height: 48px; border-radius: 14px; background: var(--btn); color: var(--white); display: grid; place-items: center; box-shadow: 0 8px 18px -8px rgba(208,16,45,.6); }
+.feature h3 { font-size: 1.12rem; font-weight: 700; }
+.feature p { color: var(--ink-2); font-size: .93rem; }
+.feature .note { font-size: .82rem; color: var(--flag); background: var(--flag-bg); border-radius: 10px; padding: .45rem .65rem; font-weight: 600; }
+@media (max-width: 1040px) { .feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .feature-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* Demo products */
+.demo-head { display: flex; justify-content: space-between; align-items: end; gap: 1rem; flex-wrap: wrap; }
+.demo-row { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(250px, 1fr); gap: 1rem; overflow-x: auto; scroll-snap-type: x mandatory; padding: .25rem .25rem 1.25rem; margin-inline: -.25rem; }
+.demo-card { scroll-snap-align: start; background: var(--white); border: 1px solid var(--line); border-radius: var(--r-lg); padding: .8rem .8rem 1.1rem; display: grid; gap: .8rem; align-content: start; transition: box-shadow .2s ease, border-color .2s ease; }
+.demo-card:hover { box-shadow: var(--shadow); border-color: #F3C3CD; }
+.demo-img { position: relative; aspect-ratio: 4 / 3; border-radius: var(--r-md); background: radial-gradient(circle at 50% 60%, #FFFFFF 0%, var(--pink) 75%); display: grid; place-items: center; }
+.demo-img svg { width: 52%; height: auto; }
+.demo-img .pill { position: absolute; top: .6rem; left: .6rem; }
+.demo-card h3 { font-size: 1.05rem; font-weight: 700; padding-inline: .3rem; }
+.demo-card .meta { padding-inline: .3rem; color: var(--ink-3); font-size: .85rem; display: flex; justify-content: space-between; gap: .5rem; }
+.demo-card .btn { margin-inline: .3rem; }
+.demo-disclaimer { margin-top: .5rem; color: var(--ink-3); font-size: .85rem; }
+
+/* FAQ */
+.faq-grid { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: clamp(2rem, 5vw, 4rem); align-items: start; }
+.faq-list { display: grid; gap: .7rem; }
+.faq-list details { border: 1px solid var(--line); border-radius: var(--r-md); background: var(--white); }
+.faq-list details[open] { border-color: #F3C3CD; box-shadow: var(--shadow); }
+.faq-list summary { list-style: none; cursor: pointer; padding: 1.05rem 1.2rem; font-weight: 700; display: flex; justify-content: space-between; gap: 1rem; align-items: center; }
+.faq-list summary::-webkit-details-marker { display: none; }
+.faq-list summary .plus { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--pink); color: var(--red-ink); display: grid; place-items: center; transition: transform .2s ease; }
+.faq-list details[open] .plus { transform: rotate(45deg); }
+.faq-list .answer { padding: 0 1.2rem 1.15rem; color: var(--ink-2); font-size: .95rem; max-width: 62ch; }
+@media (max-width: 860px) { .faq-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* CTA */
+.cta { padding-block: 0 clamp(4rem, 8vw, 6rem); }
+.cta-box { position: relative; overflow: hidden; border-radius: var(--r-xl); padding: clamp(2.5rem, 6vw, 4.5rem) clamp(1.5rem, 5vw, 4rem); background: radial-gradient(500px 300px at 90% 10%, rgba(255,255,255,.22), transparent 70%), linear-gradient(120deg, #D0102D 0%, #F52D46 55%, #FF6D82 100%); color: var(--white); display: grid; gap: 1rem; justify-items: start; }
+.cta-box h2 { font-size: var(--step-4); font-weight: 800; color: var(--white); }
+.cta-box p { font-size: var(--step-1); color: #FFE9ED; max-width: 32rem; }
+.cta-box .btn { background: var(--white); color: var(--red-ink); margin-top: .5rem; }
+.cta-box .btn:hover { transform: translateY(-1px); }
+.cta-ring { position: absolute; right: -60px; bottom: -90px; width: 300px; height: 300px; border-radius: 50%; border: 26px solid rgba(255,255,255,.16); pointer-events: none; }
+
+/* Footer */
+.site-footer { border-top: 1px solid var(--line); background: var(--blush); padding-block: 3rem 2rem; font-size: .9rem; color: var(--ink-2); }
+.footer-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, .7fr) minmax(0, 1fr) minmax(0, 1.2fr); gap: 2rem; }
+.footer-grid h3 { font-size: .95rem; font-weight: 700; color: var(--ink); margin-bottom: .7rem; }
+.footer-grid ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .45rem; }
+.footer-grid a { text-decoration: none; }
+.footer-grid a:hover { color: var(--red-ink); text-decoration: underline; }
+.footer-grid p + p { margin-top: .5rem; }
+.footer-bottom { margin-top: 2.5rem; padding-top: 1.25rem; border-top: 1px solid var(--line); display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem; color: var(--ink-3); font-size: .82rem; }
+@media (max-width: 900px) { .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .footer-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* Dashboard */
+.dash { background: linear-gradient(180deg, var(--blush), var(--white) 420px); min-height: 80vh; padding-block: 1.5rem 4rem; }
+.dash-top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.dash-top h1 { font-size: var(--step-3); font-weight: 800; }
+.dash-top .crumb { display: inline-flex; align-items: center; gap: .35rem; color: var(--ink-2); text-decoration: none; font-size: .88rem; font-weight: 600; margin-bottom: .3rem; }
+.dash-top .crumb:hover { color: var(--red-ink); }
+.dash-grid { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 1.25rem; align-items: start; }
+.side { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 84px); display: grid; gap: 1rem; max-height: calc(100vh - 100px); overflow-y: auto; padding-bottom: .5rem; scrollbar-width: thin; }
+.panel { background: var(--white); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 1.2rem; min-width: 0; }
+.panel h2 { font-size: 1.02rem; font-weight: 700; letter-spacing: -0.01em; }
+.panel-head { display: flex; justify-content: space-between; align-items: center; gap: .6rem; margin-bottom: .9rem; flex-wrap: wrap; }
+.panel-sub { color: var(--ink-3); font-size: .82rem; }
+.side form { display: grid; gap: .9rem; }
+.help { font-size: .78rem; color: var(--ink-3); margin-top: .35rem; line-height: 1.45; }
+.side .textarea { min-height: 190px; font-size: .88rem; }
+.details-box summary { cursor: pointer; font-weight: 600; font-size: .88rem; color: var(--ink-2); padding: .2rem 0; }
+.details-fields { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; margin-top: .7rem; }
+.details-fields .full { grid-column: 1 / -1; }
+.details-fields .input { padding: .55rem .75rem; font-size: .85rem; border-radius: 10px; }
+.details-fields .field-label { font-size: .75rem; margin-bottom: .25rem; }
+.side-actions { display: flex; gap: .5rem; }
+.side-actions .btn-primary { flex: 1; }
+.demo-list { display: grid; gap: .4rem; }
+.demo-list button { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: .65rem; align-items: center; width: 100%; text-align: left; border: 1px solid var(--line-2); background: var(--white); border-radius: 12px; padding: .45rem .6rem .45rem .45rem; cursor: pointer; font-size: .86rem; font-weight: 600; }
+.demo-list button:hover, .demo-list button[aria-current="true"] { border-color: var(--red); background: var(--blush); }
+.demo-list .mini { width: 40px; height: 40px; border-radius: 10px; background: var(--pink); display: grid; place-items: center; padding: 5px; }
+.saved-list { display: grid; gap: .4rem; }
+.saved-item { display: flex; align-items: center; gap: .4rem; border: 1px solid var(--line-2); border-radius: 12px; padding: .35rem .35rem .35rem .7rem; }
+.saved-item button.open { flex: 1; min-width: 0; text-align: left; border: 0; background: none; cursor: pointer; padding: .2rem 0; }
+.saved-item .t { display: block; font-weight: 600; font-size: .85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.saved-item .d { display: block; font-size: .74rem; color: var(--ink-3); }
+.saved-item .del { border: 0; background: none; width: 30px; height: 30px; border-radius: 8px; cursor: pointer; color: var(--ink-3); flex: none; }
+.saved-item .del:hover { background: var(--neg-bg); color: var(--neg); }
+
+.results { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1rem; }
+.span-6 { grid-column: span 6; } .span-4 { grid-column: span 4; } .span-3 { grid-column: span 3; } .span-2 { grid-column: span 2; }
+@media (max-width: 1180px) { .span-4, .span-2 { grid-column: span 3; } }
+@media (max-width: 980px) { .dash-grid { grid-template-columns: minmax(0, 1fr); } .side { display: contents; } .side > .panel:first-child { order: 1; } #dash-main { order: 2; } .side > .panel:nth-child(2) { order: 3; } .side > .panel:nth-child(3) { order: 4; } }
+@media (max-width: 720px) { .span-4, .span-3, .span-2 { grid-column: span 6; } }
+
+.product-panel { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 1.1rem; align-items: center; }
+.product-panel .thumb { width: 96px; height: 96px; border-radius: 18px; background: radial-gradient(circle at 50% 60%, #FFF, var(--pink) 80%); display: grid; place-items: center; padding: 14px; color: var(--red-ink); }
+.product-panel h2 { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.02em; }
+.product-meta { display: flex; flex-wrap: wrap; gap: .35rem .9rem; margin-top: .45rem; font-size: .82rem; color: var(--ink-2); }
+.product-meta a { color: var(--red-ink); word-break: break-all; }
+.product-actions { display: flex; gap: .5rem; flex-wrap: wrap; justify-content: flex-end; }
+@media (max-width: 720px) { .product-panel { grid-template-columns: 72px minmax(0, 1fr); } .product-panel .thumb { width: 72px; height: 72px; padding: 10px; } .product-actions { grid-column: 1 / -1; justify-content: flex-start; } }
+
+.summary-panel { background: linear-gradient(135deg, #FFF 0%, var(--pink) 100%); border-color: #F4C7D0; }
+.summary-panel .lead { font-size: 1.12rem; line-height: 1.6; font-weight: 500; max-width: 70ch; }
+.summary-panel .basis { margin-top: .8rem; font-size: .8rem; color: var(--ink-3); }
+.ai-badge { display: inline-flex; align-items: center; gap: .35rem; background: var(--ink); color: var(--white); border-radius: 999px; padding: .2rem .65rem; font-size: .75rem; font-weight: 600; }
+
+.stat-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
+.stat { background: var(--blush); border-radius: 12px; padding: .7rem .8rem; min-width: 0; }
+.stat .v { font-size: 1.45rem; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.stat .k { font-size: .76rem; color: var(--ink-3); line-height: 1.3; }
+.rating-bars { display: grid; gap: .35rem; margin-top: 1rem; }
+.rating-bars .r { display: grid; grid-template-columns: 2.2rem minmax(0, 1fr) 2rem; gap: .5rem; align-items: center; font-size: .8rem; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+.track { height: 8px; border-radius: 999px; background: var(--unc-bg); overflow: hidden; }
+.track span { display: block; height: 100%; border-radius: 999px; background: var(--red); }
+.sent-rows { display: grid; gap: .55rem; margin-top: 1rem; }
+.sent-rows .r { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr) 4.6rem; gap: .6rem; align-items: center; font-size: .85rem; }
+.sent-rows .n { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+.bar-lg { height: 16px; }
+
+.theme-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; }
+.theme-cols h3 { font-size: .85rem; font-weight: 700; margin-bottom: .6rem; display: flex; gap: .4rem; align-items: center; }
+.theme-list { display: grid; gap: .5rem; }
+.theme-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .2rem .6rem; font-size: .85rem; }
+.theme-item .track { grid-column: 1 / -1; height: 6px; }
+.theme-item .c { font-variant-numeric: tabular-nums; color: var(--ink-3); font-size: .8rem; }
+.track.pos span { background: var(--pos); } .track.neg span { background: var(--neg); }
+@media (max-width: 520px) { .theme-cols { grid-template-columns: minmax(0, 1fr); } }
+.empty-note { color: var(--ink-3); font-size: .85rem; }
+
+.complaints { display: grid; gap: .8rem; }
+.complaint { border-left: 3px solid var(--neg); padding: .1rem 0 .1rem .8rem; display: grid; gap: .35rem; }
+.complaint .h { font-weight: 700; font-size: .92rem; display: flex; justify-content: space-between; gap: .5rem; }
+.complaint .h span { color: var(--ink-3); font-weight: 600; font-size: .8rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.quote { font-size: .83rem; color: var(--ink-2); background: var(--blush); border-radius: 10px; padding: .45rem .65rem; }
+
+.flags { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
+@media (max-width: 860px) { .flags { grid-template-columns: minmax(0, 1fr); } }
+.flag { border: 1px solid #F6D9B8; background: linear-gradient(180deg, var(--flag-bg), #FFFFFF 70%); border-radius: var(--r-md); padding: 1rem 1.05rem; display: grid; gap: .55rem; align-content: start; min-width: 0; }
+.flag-top { display: flex; gap: .6rem; align-items: flex-start; }
+.flag-top svg { flex: none; color: var(--flag); margin-top: 2px; }
+.flag h3 { font-size: .95rem; font-weight: 700; line-height: 1.35; }
+.flag .lvl { margin-left: auto; }
+.flag p { font-size: .85rem; color: var(--ink-2); }
+.flag .other { font-size: .8rem; color: var(--ink-3); }
+.flag .ev { display: grid; gap: .35rem; }
+.flag .ev .quote { background: var(--white); border: 1px solid var(--line-2); }
+.no-flags { display: flex; gap: .7rem; align-items: flex-start; background: var(--pos-bg); color: var(--pos); border-radius: var(--r-md); padding: .9rem 1rem; font-size: .88rem; font-weight: 500; }
+.flag-note { font-size: .8rem; color: var(--ink-3); }
+
+.seller-rows { display: grid; gap: .1rem; }
+.seller-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .15rem .8rem; padding: .7rem 0; border-bottom: 1px solid var(--line-2); }
+.seller-row:last-child { border-bottom: 0; }
+.seller-row .k { font-size: .85rem; font-weight: 600; }
+.seller-row .v { font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+.seller-row .v.na { color: var(--ink-3); font-weight: 500; font-size: .85rem; }
+.seller-row .note { grid-column: 1 / -1; font-size: .78rem; color: var(--ink-3); line-height: 1.45; }
+.src { font-size: .7rem; font-weight: 600; color: var(--ink-3); border: 1px solid var(--line-2); border-radius: 999px; padding: .05rem .45rem; margin-left: .35rem; white-space: nowrap; vertical-align: 1px; }
+
+.tabs { display: flex; gap: .3rem; flex-wrap: wrap; }
+.tabs button { border: 1px solid var(--line-2); background: var(--white); border-radius: 999px; padding: .3rem .75rem; font-size: .8rem; font-weight: 600; cursor: pointer; color: var(--ink-2); }
+.tabs button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--white); }
+.review-list { display: grid; gap: .6rem; margin-top: .9rem; }
+.review { border: 1px solid var(--line-2); border-radius: var(--r-md); padding: .8rem .9rem; display: grid; gap: .45rem; }
+.review-top { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; font-size: .78rem; }
+.review-top .stars { color: #E9A100; letter-spacing: 1px; margin-right: .2rem; }
+.review-top .idx { color: var(--ink-3); margin-left: auto; font-variant-numeric: tabular-nums; }
+.review p { font-size: .9rem; overflow-wrap: anywhere; }
+mark.hp { background: var(--pos-bg); color: var(--pos); border-radius: 4px; padding: 0 2px; }
+mark.hn { background: var(--neg-bg); color: var(--neg); border-radius: 4px; padding: 0 2px; }
+.key { display: flex; gap: .8rem; flex-wrap: wrap; font-size: .76rem; color: var(--ink-3); margin-top: .6rem; }
+
+.source-bar { display: flex; flex-wrap: wrap; gap: .4rem 1.4rem; font-size: .8rem; color: var(--ink-2); }
+.source-bar b { color: var(--ink); font-weight: 600; }
+
+.notice { display: grid; gap: .9rem; justify-items: start; padding: 2rem; text-align: left; }
+.notice .ic { width: 52px; height: 52px; border-radius: 16px; background: var(--flag-bg); color: var(--flag); display: grid; place-items: center; }
+.notice h2 { font-size: 1.3rem; font-weight: 800; }
+.notice p { color: var(--ink-2); max-width: 60ch; }
+.notice .row { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px); background: var(--ink); color: var(--white); padding: .7rem 1.1rem; border-radius: 999px; font-size: .88rem; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease; z-index: 80; max-width: calc(100% - 32px); }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* Live retrieval + AI evidence (live.js) */
+.pill-live { background: var(--pos-bg); color: var(--pos); }
+.live-line { display: flex; align-items: center; gap: .55rem; color: var(--ink-2); font-weight: 600; margin: .2rem 0 .7rem; overflow-wrap: anywhere; }
+.spin { width: 16px; height: 16px; flex: none; border-radius: 50%; border: 2.5px solid var(--pink); border-top-color: var(--red); animation: tlspin .8s linear infinite; }
+@keyframes tlspin { to { transform: rotate(360deg); } }
+.live-stats { grid-template-columns: repeat(5, minmax(0, 1fr)); margin: .9rem 0; }
+@media (max-width: 720px) { .live-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.live-status .source-bar { display: grid; gap: .3rem; }
+.live-status .source-bar span, .live-status .source-bar a { overflow-wrap: anywhere; }
+.live-actions { margin-top: .9rem; }
+.live-status .bar .p { background: var(--grad); }
+.row { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
+.rule-head { font-size: 1rem; font-weight: 750; color: var(--ink-2); margin-top: .8rem; }
+.findings { display: grid; gap: .9rem; }
+.finding { border: 1px solid var(--line-2); border-radius: var(--r-md); padding: .9rem 1rem; display: grid; gap: .55rem; min-width: 0; }
+.finding .flag-top { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; }
+.finding h3 { font-size: .98rem; font-weight: 700; flex: 1 1 12rem; min-width: 0; }
+.ai-rat { font-size: .88rem; color: var(--ink-2); background: var(--blush); border-radius: 8px; padding: .45rem .6rem; }
+.ev-lbl { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3); }
+.ev-quote { margin: .35rem 0 0; border-left: 3px solid var(--line); padding-left: .7rem; }
+.ev-quote blockquote { margin: 0; font-size: .9rem; overflow-wrap: anywhere; }
+.ev-quote figcaption { display: flex; flex-wrap: wrap; gap: .5rem; font-size: .75rem; color: var(--ink-3); margin-top: .2rem; }
+.ev-quote code, .ids code { font-size: .74rem; background: var(--unc-bg); border-radius: 4px; padding: 0 .25rem; overflow-wrap: anywhere; }
+.ids summary { cursor: pointer; font-size: .8rem; color: var(--ink-2); }
+.ids p { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .4rem; }
+.ai-lists { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: .8rem; margin: .8rem 0; }
+.ai-list h3 { font-size: .85rem; font-weight: 700; margin-bottom: .25rem; }
+.ai-list ul { padding-left: 1.1rem; font-size: .88rem; color: var(--ink-2); display: grid; gap: .2rem; }
+.wf { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; }
+.wf-step { display: flex; gap: .6rem; align-items: flex-start; border: 1px solid var(--line-2); border-radius: var(--r-md); padding: .65rem .75rem; min-width: 0; }
+.wf-step b { display: block; font-size: .9rem; }
+.wf-st { display: block; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3); }
+.wf-run .wf-st { color: var(--red-ink); } .wf-done .wf-st { color: var(--pos); } .wf-fail .wf-st { color: var(--neg); } .wf-warn .wf-st { color: var(--mix); }
+.wf-d { display: block; font-size: .8rem; color: var(--ink-2); overflow-wrap: anywhere; }
+.wf-num { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: .8rem; font-weight: 800; background: var(--unc-bg); color: var(--unc); }
+.wf-done .wf-num { background: var(--pos-bg); color: var(--pos); }
+.wf-run .wf-num { background: var(--pink); color: var(--red-ink); animation: tlpulse 1.2s ease-in-out infinite; }
+.wf-warn .wf-num { background: var(--mix-bg); color: var(--mix); }
+.wf-fail .wf-num { background: var(--neg-bg); color: var(--neg); }
+@keyframes tlpulse { 50% { opacity: .45; } }
+@media (max-width: 860px) { .wf { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .wf { grid-template-columns: minmax(0, 1fr); } }
+.decision-panel { border-color: var(--red); }
+.stance-mostly_positive { background: var(--pos-bg); color: var(--pos); } .stance-mixed { background: var(--mix-bg); color: var(--mix); }
+.stance-mostly_negative { background: var(--neg-bg); color: var(--neg); } .stance-insufficient_evidence { background: var(--unc-bg); color: var(--unc); }
+.report-panel { border-color: var(--red); }
+.rp-meta { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; color: var(--ink-2); font-size: .88rem; margin-bottom: .8rem; }
+.rp-intro { font-size: 1.02rem; line-height: 1.6; margin-bottom: .6rem; }
+.rp-h { font-size: 1.05rem; font-weight: 800; margin: 1.3rem 0 .6rem; }
+.rp-theme { border-left: 3px solid var(--line); padding: .2rem 0 .2rem .9rem; margin-bottom: 1rem; display: grid; gap: .4rem; }
+.rp-theme h4 { font-size: .98rem; font-weight: 800; display: flex; flex-wrap: wrap; gap: .45rem; align-items: center; }
+.rp-theme p { font-size: .93rem; color: var(--ink-2); overflow-wrap: anywhere; }
+.rp-impact { background: var(--mix-bg); border-radius: 8px; padding: .4rem .6rem; }
+.rp-notes { padding-left: 1.1rem; font-size: .85rem; color: var(--mix); display: grid; gap: .2rem; }
+.rp-list { padding-left: 1.1rem; display: grid; gap: .3rem; color: var(--ink-2); font-size: .93rem; }
+.lim-list { padding-left: 1.1rem; display: grid; gap: .3rem; color: var(--ink-2); font-size: .9rem; }
+.file-input { padding: .45rem; font-size: .85rem; max-width: 100%; }
+/* Problem, survey, stack, roadmap, evaluation */
+.prob-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1rem; }
+.prob-users { margin-top: 1.4rem; color: var(--ink-2); font-size: .95rem; }
+.stack-grid, .ev2-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+.sv-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.sv-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.sv-takeaway { justify-items: start; text-align: left; align-content: center; background: var(--blush); }
+.sv-takeaway p { font-weight: 600; color: var(--ink); }
+.sv-card { background: var(--white); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 1.3rem 1.1rem; display: grid; gap: .5rem; justify-items: center; text-align: center; align-content: start; min-width: 0; }
+.ring { --p: 0; width: 112px; aspect-ratio: 1; border-radius: 50%; background: conic-gradient(var(--red) calc(var(--p) * 1%), var(--line-2) 0); display: grid; place-items: center; }
+.ring span { width: 80px; aspect-ratio: 1; border-radius: 50%; background: var(--white); display: grid; place-items: center; font-weight: 800; font-size: 1.15rem; }
+.sv-card h3 { font-size: 1rem; font-weight: 700; }
+.sv-n { font-weight: 700; color: var(--red-ink); }
+.sv-q { font-size: .85rem; color: var(--ink-2); overflow-wrap: anywhere; }
+.sv-notes, .rm-status { margin-top: 1.4rem; display: grid; gap: .6rem; max-width: 62rem; color: var(--ink-2); font-size: .93rem; }
+.sv-src { font-size: .8rem; color: var(--ink-3); }
+.feature .needs { font-size: .84rem; color: var(--ink-2); background: var(--blush); border-radius: 10px; padding: .45rem .65rem; }
+.rm-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.rm-card { background: var(--white); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 1.3rem 1.4rem; display: grid; gap: .6rem; align-content: start; justify-items: start; min-width: 0; }
+.rm-card h3 { font-size: 1.08rem; font-weight: 700; display: flex; align-items: center; gap: .5rem; }
+.rm-card ul, .ev2-impact ul { padding-left: 1.1rem; display: grid; gap: .3rem; color: var(--ink-2); font-size: .92rem; }
+.ev2-impact { border-style: dashed; }
+.demo-cta { display: flex; flex-wrap: wrap; gap: .6rem 1rem; align-items: center; color: var(--ink-2); font-size: .92rem; margin-bottom: 1.2rem; }
+.footer-sources { margin-top: 2rem; padding-top: 1.4rem; border-top: 1px solid var(--line); display: grid; gap: .6rem; font-size: .88rem; }
+.footer-sources ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .4rem 1.2rem; }
+.footer-sources a { text-decoration: underline; }
+@media (max-width: 1100px) { .prob-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .sv-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .stack-grid, .ev2-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .rm-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 640px) { .prob-grid, .sv-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 460px) { .prob-grid, .sv-grid, .stack-grid, .ev2-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* ================= Motion (motion.js adds html.motion only when motion is allowed) ================= */
+:root { --ease: cubic-bezier(.16, 1, .3, 1); }
+.btn { transition: transform .35s var(--ease), box-shadow .35s var(--ease), background-color .25s, border-color .25s, color .25s; will-change: transform; }
+.btn:active { transform: scale(.97); transition-duration: .1s; }
+.btn:focus-visible, .lang button:focus-visible, .nav a:focus-visible { outline: 3px solid rgba(245,45,70,.45); outline-offset: 2px; }
+.btn-ghost:hover { box-shadow: 0 8px 18px -12px rgba(208,16,45,.45); }
+.btn[aria-busy="true"] { cursor: progress; opacity: .85; }
+.btn[aria-busy="true"]::before { content: ""; width: 14px; height: 14px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: tlspin .7s linear infinite; }
+/* Cards: hover lift, border and shadow (pointer devices only) */
+:is(.feature, .rs-card, .sv-card, .rm-card, .step, .demo-card, .faq-list details) { transition: transform .45s var(--ease), box-shadow .45s var(--ease), border-color .3s; }
+@media (hover: hover) {
+  :is(.feature, .rs-card, .sv-card, .rm-card, .step, .demo-card):hover { transform: translateY(-4px); border-color: #F3B7C2; box-shadow: 0 22px 44px -26px rgba(208,16,45,.38); }
+  .feature:hover .feature-icon { transform: rotate(-6deg) scale(1.06); }
+}
+.feature-icon { transition: transform .45s var(--ease); }
+/* Scroll progress */
+#tl-progress { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 60; transform-origin: 0 50%; transform: scaleX(0); background: linear-gradient(90deg, #D0102D, #F52D46 55%, #FF8A9B); pointer-events: none; }
+/* Nav: animated underline + active section */
+.nav a { position: relative; transition: color .25s, background-color .25s; }
+.nav a::after { content: ""; position: absolute; left: .7rem; right: .7rem; bottom: .2rem; height: 2px; border-radius: 2px; background: var(--red); transform: scaleX(0); transform-origin: 0 50%; transition: transform .45s var(--ease); }
+.nav a:hover::after, .nav a.is-active::after { transform: scaleX(1); }
+.nav a.is-active { color: var(--ink); }
+.site-header { transition: box-shadow .45s var(--ease), border-color .45s; }
+.site-header.scrolled { box-shadow: 0 10px 30px -22px rgba(23,23,23,.35); }
+/* Live-data dot */
+.pill-live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 0 rgba(17,121,90,.45); }
+/* Restrained background motion */
+.hero::before, .cta-box::before { content: ""; position: absolute; pointer-events: none; border-radius: 50%; filter: blur(40px); }
+.hero::before { width: 420px; height: 420px; right: -120px; top: -140px; background: radial-gradient(circle, rgba(245,45,70,.16), transparent 65%); }
+.cta-box::before { width: 360px; height: 360px; left: -120px; top: -160px; background: radial-gradient(circle, rgba(255,255,255,.28), transparent 65%); }
+.hero > .wrap { position: relative; }
+
+@media (prefers-reduced-motion: no-preference) {
+  html.motion .hero::before { animation: tl-drift 18s ease-in-out infinite alternate; }
+  html.motion .cta-box::before { animation: tl-drift 22s ease-in-out infinite alternate-reverse; }
+  html.motion .pill-live::before { animation: tl-dot 2.4s ease-in-out infinite; }
+  /* Hero entrance: headline, text, form, CTAs, then the mockup */
+  html.motion .hero-grid > div:first-child > * { animation: tl-rise .9s var(--ease) both; }
+  html.motion .hero-grid > div:first-child > :nth-child(2) { animation-delay: .08s; }
+  html.motion .hero-grid > div:first-child > :nth-child(3) { animation-delay: .16s; }
+  html.motion .hero-grid > div:first-child > :nth-child(4) { animation-delay: .24s; }
+  html.motion .hero-grid > div:first-child > :nth-child(n+5) { animation-delay: .32s; }
+  html.motion .hero .mock { animation: tl-rise 1.1s var(--ease) .2s both; }
+  html.motion .hero .mock-card { transition: transform .6s var(--ease); }
+  /* Scroll reveal */
+  html.motion .rv { opacity: 0; transform: translateY(28px); filter: blur(6px); transition: opacity .9s var(--ease), transform .9s var(--ease), filter .9s var(--ease); transition-delay: var(--rv-d, 0s); }
+  html.motion .rv.in { opacity: 1; transform: none; filter: none; }
+  html.motion .rv.in:is(.feature, .rs-card, .sv-card, .rm-card, .step) { transition: opacity .9s var(--ease) var(--rv-d, 0s), transform .45s var(--ease), filter .9s var(--ease) var(--rv-d, 0s), box-shadow .45s var(--ease), border-color .3s; }
+  /* Workflow: steps light up in sequence, arrows draw in after their step */
+  html.motion #how .step .step-num { transition: background-color .5s var(--ease) var(--rv-d, 0s), color .5s var(--ease) var(--rv-d, 0s), transform .6s var(--ease) var(--rv-d, 0s); }
+  html.motion #how .step:not(.in) .step-num { transform: scale(.6); }
+  html.motion #how .step .step-arrow { opacity: 0; transition: opacity .5s var(--ease) calc(var(--rv-d, 0s) + .35s); }
+  html.motion #how .step.in .step-arrow { opacity: 1; }
+  /* Survey rings fill as they count up */
+  html.motion .ring { transition: --p 1.4s var(--ease); }
+}
+@property --p { syntax: '<number>'; inherits: true; initial-value: 0; }
+@keyframes tl-rise { from { opacity: 0; transform: translateY(22px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes tl-drift { from { transform: translate(0, 0) scale(1); } to { transform: translate(-60px, 50px) scale(1.15); } }
+@keyframes tl-dot { 0%, 100% { box-shadow: 0 0 0 0 rgba(17,121,90,.4); } 55% { box-shadow: 0 0 0 6px rgba(17,121,90,0); } }
+
+/* ================= Dark collage hero (poster style) ================= */
+.hero { --hero-bg: #050505; background:
+  radial-gradient(520px 360px at 92% 8%, rgba(245,45,70,.28), transparent 70%),
+  radial-gradient(420px 320px at 0% 100%, rgba(245,45,70,.22), transparent 70%),
+  linear-gradient(transparent 70%, rgba(245,45,70,.08)),
+  var(--hero-bg); color: var(--white); }
+.hero::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 38%; pointer-events: none; opacity: .35;
+  background-image: linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px);
+  background-size: 34px 34px; -webkit-mask-image: linear-gradient(transparent, #000); mask-image: linear-gradient(transparent, #000); }
+.hero > .wrap { z-index: 2; }
+.hero h1 { color: var(--white); }
+.hero h1 .grad { font-family: "Dancing Script", var(--font); font-weight: 700; font-size: 1.12em; letter-spacing: -0.01em; line-height: 1; background: linear-gradient(100deg, #F52D46, #FF5C74 60%, #FF8A9B); -webkit-background-clip: text; background-clip: text; color: transparent; padding: 0 .08em .05em 0; }
+.hero-sub { color: rgba(255,255,255,.78); }
+.hero .url-row { border-color: transparent; box-shadow: 0 18px 40px -18px rgba(245,45,70,.55); }
+.hero-hand { margin-top: .7rem; display: inline-flex; align-items: center; gap: .4rem; font-family: "Dancing Script", var(--font); font-weight: 700; font-size: 1.35rem; color: var(--white); transform: rotate(-2deg); }
+.hero-hand svg { color: var(--white); }
+.hero .hero-note { color: rgba(255,255,255,.62); }
+.hero .btn-link { color: #FF8A9B; }
+.hero .btn-ghost { background: transparent; color: var(--white); border-color: rgba(255,255,255,.35); }
+.hero .btn-ghost:hover { border-color: #FF8A9B; color: #FFD6DC; }
+.hero .field-label { color: var(--white); }
+.hero .field-error { color: #FF9BA8; }
+.hero-tiles { list-style: none; margin: 1.6rem 0 0; padding: 1.05rem .6rem; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .3rem; max-width: 36rem;
+  background: #F4F2F1; color: var(--ink); transform: rotate(-.6deg);
+  clip-path: polygon(0 6%, 4% 0, 9% 5%, 15% 1%, 22% 6%, 30% 0, 38% 5%, 46% 1%, 54% 6%, 62% 0, 70% 5%, 78% 1%, 86% 6%, 93% 0, 100% 5%, 100% 94%, 95% 100%, 88% 95%, 80% 100%, 72% 94%, 64% 100%, 56% 95%, 48% 100%, 40% 94%, 32% 100%, 24% 95%, 16% 100%, 8% 94%, 0 100%); }
+.hero-tiles li { display: grid; justify-items: center; gap: .35rem; text-align: center; padding: .3rem .2rem; min-width: 0; }
+.hero-tiles li + li { border-left: 1px dashed #D9CFD1; }
+.hero-tiles b { font-size: .82rem; font-weight: 600; line-height: 1.2; overflow-wrap: anywhere; }
+.tile-ic { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; color: #D0102D; transition: transform .45s var(--ease); }
+@media (hover: hover) { .hero-tiles li:hover .tile-ic { transform: translateY(-3px) rotate(-6deg); } }
+.hero-art { position: relative; width: 100%; max-width: 440px; margin-inline: auto; aspect-ratio: 640 / 941; max-height: min(78vh, 650px); }
+.hero-art-img { width: 100%; height: 100%; object-fit: contain; display: block; transition: opacity .5s ease;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent), linear-gradient(transparent, #000 4%, #000 96%, transparent); -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent), linear-gradient(transparent, #000 4%, #000 96%, transparent); mask-composite: intersect; }
+.hero[data-gl="on"] .hero-art-img { opacity: 0; }
+.hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; display: block; }
+.art-tag { position: absolute; top: .7rem; left: .7rem; z-index: 3; background: rgba(11,11,12,.72); color: var(--white); border: 1px solid rgba(255,255,255,.25); backdrop-filter: blur(6px); }
+.hero-hint { position: absolute; left: 50%; bottom: -1.9rem; transform: translateX(-50%); white-space: nowrap; font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.55); display: none; align-items: center; gap: .5rem; }
+.hero[data-gl="on"] .hero-hint { display: inline-flex; }
+.hero-hint::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #F52D46; }
+.doodle { position: absolute; pointer-events: none; z-index: 1; }
+.doodle-star { width: 54px; left: max(8px, calc(50% - 640px)); top: 1.6rem; transform: rotate(-12deg); }
+.doodle-heart { width: 44px; right: 46%; bottom: 14%; transform: rotate(-14deg); opacity: .8; }
+.doodle-spark { width: 30px; right: 4%; top: 46%; opacity: .85; }
+@media (max-width: 900px) {
+  .hero-art { max-width: 360px; margin-top: 1rem; }
+  .doodle-heart { display: none; }
+}
+@media (max-width: 520px) {
+  .hero-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: .7rem; }
+  .hero-tiles li:nth-child(3) { border-left: 0; }
+  .doodle-star { width: 38px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  html.motion .hero .hero-art { animation: tl-rise 1.1s var(--ease) .2s both; }
+  html.motion .hero-hint::before { animation: tl-dot 2.4s ease-in-out infinite; }
+  html.motion .doodle-spark { animation: tl-twinkle 3.2s ease-in-out infinite; }
+}
+@keyframes tl-twinkle { 0%, 100% { opacity: .85; transform: scale(1) rotate(0); } 50% { opacity: .4; transform: scale(.82) rotate(12deg); } }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } .rv { opacity: 1 !important; transform: none !important; filter: none !important; } #tl-progress { display: none; } }
+</style>
+</head>
+<body>
+
+<header class="site-header" id="top">
+  <div class="wrap header-row">
+    <a class="logo" href="#home" data-go="home" aria-label="TrustLens home">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="13.5" cy="13.5" r="9" fill="none" stroke="#171717" stroke-width="3.4"/><path d="M20.5 20.5 28 28" stroke="#171717" stroke-width="3.6" stroke-linecap="round"/><path d="M9.3 13.8l2.9 2.9 5.2-5.6" fill="none" stroke="#F52D46" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      TrustLens
+    </a>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="#problem" data-go="problem" data-i18n="nav.problem">Problem</a>
+      <a href="#research" data-go="research" data-i18n="nav.research">Research Insights</a>
+      <a href="#how" data-go="how" data-i18n="nav.how">How It Works</a>
+      <a href="#survey" data-go="survey" data-i18n="nav.survey">Survey</a>
+      <a href="#features" data-go="features" data-i18n="nav.features">Features</a>
+      <a href="#demo" data-go="demo" data-i18n="nav.demo">Demo</a>
+      <a href="#roadmap" data-go="roadmap" data-i18n="nav.roadmap">Roadmap</a>
+      <a href="#faq" data-go="faq" data-i18n="nav.faq">FAQ</a>
+    </nav>
+    <div class="header-actions">
+      <div class="lang" role="group" aria-label="Language">
+        <button type="button" data-lang="en" aria-pressed="true">EN</button>
+        <button type="button" data-lang="vi" aria-pressed="false">VI</button>
+      </div>
+      <a class="btn btn-primary btn-sm btn-start" href="#dashboard" data-go="dashboard" data-i18n="nav.start">Get Started</a>
+      <button class="menu-btn" type="button" id="menu-btn" aria-expanded="false" aria-controls="nav" aria-label="Menu">
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h14M3 14h14" stroke="#171717" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+<div id="tl-progress" aria-hidden="true"></div>
+
+<main id="landing">
+  <!-- B. Hero -->
+  <section class="hero" id="home">
+    <svg class="doodle doodle-star" viewBox="0 0 60 60" aria-hidden="true"><path d="M30 4l6 20 20 2-16 12 6 20-16-12-16 12 6-20L4 26l20-2z" fill="none" stroke="#F52D46" stroke-width="2.4" stroke-linejoin="round"/></svg>
+    <svg class="doodle doodle-heart" viewBox="0 0 60 54" aria-hidden="true"><path d="M30 50S4 34 4 17C4 9 10 4 17 4c6 0 10 4 13 9 3-5 7-9 13-9 7 0 13 5 13 13 0 17-26 33-26 33z" fill="none" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/></svg>
+    <svg class="doodle doodle-spark" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2c1.5 10 4 13.5 16 18-12 4.5-14.5 8-16 18-1.5-10-4-13.5-16-18 12-4.5 14.5-8 16-18z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    <div class="wrap hero-grid">
+      <div>
+        <h1 data-i18n="hero.title">Look <span class="grad">Closer.</span><br>Shop <span class="grad">Smarter.</span></h1>
+        <p class="hero-sub" data-i18n="hero.sub">An AI-powered decision-support tool that helps Vietnamese Gen Z shoppers evaluate product reviews and available seller credibility information before purchasing on TikTok Shop.</p>
+
+        <form class="hero-form" id="hero-url-form" novalidate>
+          <label class="sr" for="hero-url" data-i18n="hero.urlLabel">TikTok Shop product link</label>
+          <div class="url-row">
+            <span class="icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></span>
+            <input id="hero-url" type="url" inputmode="url" autocomplete="off" placeholder="Paste a TikTok Shop product link" data-i18n-ph="hero.urlPh">
+            <button class="btn btn-primary" type="submit" data-i18n="hero.analyse">Analyse now</button>
+          </div>
+          <p class="field-error" id="hero-url-error" hidden></p>
+        </form>
+        <p class="hero-hand" aria-hidden="true"><span data-i18n="hero.hand">See what real buyers say</span> <svg width="34" height="22" viewBox="0 0 34 22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 19c9 1 20-4 27-15"/><path d="M22 4h7v7"/></svg></p>
+        <div class="hero-alt">
+          <a class="btn btn-ghost btn-sm" href="#how" data-go="how" data-i18n="hero.cta2">Explore how it works</a>
+          <button class="btn-link" type="button" id="hero-manual-toggle" aria-expanded="false" aria-controls="hero-manual" data-i18n="hero.manualToggle">Paste review text instead</button>
+          <span class="hero-note" data-i18n="hero.note">Retrieves real reviews through a configured data provider. Never demo data.</span>
+        </div>
+        <form class="hero-manual" id="hero-manual" hidden novalidate>
+          <label class="field-label" for="hero-reviews" data-i18n="hero.manualLabel">Review text, one review per line</label>
+          <textarea class="textarea" id="hero-reviews" rows="5" placeholder="5★ Âm thanh hay, pin trâu, giao hàng nhanh&#10;2★ Battery life is much shorter than the listing says" data-i18n-ph="hero.manualPh"></textarea>
+          <p class="field-error" id="hero-reviews-error" hidden></p>
+          <div class="actions"><button class="btn btn-primary" type="submit" data-i18n="hero.analyseText">Analyse pasted reviews</button></div>
+        </form>
+
+        <ul class="hero-tiles" aria-label="Key features"><li><span class="tile-ic" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12.5h5"/></svg></span><b data-i18n="hero.t1">Real Reviews</b></li><li><span class="tile-ic" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/><path d="M10 14.5l1.2-5h1.6l1.2 5M10.4 13h3.2"/></svg></span><b data-i18n="hero.t2">AI-Powered Analysis</b></li><li><span class="tile-ic" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V12M10 20V7M15 20v-5M20 20V4M3 20h18"/></svg></span><b data-i18n="hero.t3">Key Insights</b></li><li><span class="tile-ic" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6l8-3z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></span><b data-i18n="hero.t4">Shop Smarter</b></li></ul>
+      </div>
+
+      <div class="hero-art">
+        <img class="hero-art-img" src="hero-art.jpg" width="640" height="941" alt="Illustration: a TikTok Shop product page on a phone with buyer reviews, in a pink and black collage" data-i18n-alt="art.alt">
+        <span class="pill art-tag" data-i18n="art.tag">Illustrative artwork</span>
+        <p class="hero-hint" aria-hidden="true" data-i18n="art.hint">Move across the artwork</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- S2. The problem (wording from the group poster) -->
+  <section class="section problem" id="problem">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker" data-i18n="prob.kicker">The problem</span>
+        <h2 data-i18n="prob.title">More information. But can we trust it?</h2>
+        <p data-i18n="prob.lead">TikTok Shop combines creator content, product recommendations and customer reviews. However, Gen Z consumers may struggle to distinguish paid promotions from genuine reviews and assess product quality before purchasing.</p>
+      </div>
+      <div class="prob-grid">
+        <article class="feature"><span class="feature-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg></span><h3 data-i18n="prob.c1.t">Real review or paid promotion?</h3><p data-i18n="prob.c1.d">Creator content, ads and customer reviews sit side by side, so genuine experiences are hard to tell apart from promotion.</p></article>
+        <article class="feature"><span class="feature-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg></span><h3 data-i18n="prob.c2.t">Good quality or just a trend?</h3><p data-i18n="prob.c2.d">A product can be popular without being good. Its real quality is uncertain until it arrives.</p></article>
+        <article class="feature"><span class="feature-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 7h14"/><path d="M5 7l-3 7a3 3 0 0 0 6 0L5 7zM19 7l-3 7a3 3 0 0 0 6 0l-3-7z"/></svg></span><h3 data-i18n="prob.c3.t">Repeated or biased reviews</h3><p data-i18n="prob.c3.d">Very similar wording, waves of short five-star reviews or little negative feedback make it hard to judge how balanced the reviews are.</p></article>
+        <article class="feature"><span class="feature-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9l1.5-5h13L20 9"/><path d="M4 9v11h16V9"/><path d="M10 20v-5h4v5"/></svg></span><h3 data-i18n="prob.c4.t">Which seller is reliable?</h3><p data-i18n="prob.c4.d">Seller information is scattered and partly self-reported, so credibility is hard to judge before buying.</p></article>
+        <article class="feature"><span class="feature-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h10M7 17h6"/></svg></span><h3 data-i18n="prob.c5.t">Information overload</h3><p data-i18n="prob.c5.d">Videos, livestreams, ratings and hundreds of reviews: too much to read before a quick purchase.</p></article>
+      </div>
+      <p class="prob-users"><b data-i18n="prob.users.t">Target users:</b> <span data-i18n="prob.users.d">aged 18–24 · university students · active TikTok users · regular online shoppers</span></p>
+    </div>
+  </section>
+
+  <!-- C. Research insights. External findings were checked against the original sources (Oct 2026). -->
+  <section class="section research" id="research">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker" data-i18n="research.kicker">Why TrustLens exists</span>
+        <h2 data-i18n="research.title">Research Insights</h2>
+        <p data-i18n="research.lead">Vietnamese Gen Z shoppers buy often and quickly on TikTok Shop, are strongly shaped by social content, and treat trust as decisive even though it is fragile. These published findings shaped TrustLens's features. Every number below was checked against its original source.</p>
+      </div>
+
+      <h3 class="rs-sub" data-i18n="research.ind.t">Industry reports</h3>
+      <div class="rs-grid">
+        <article class="rs-card">
+          <span class="rs-stat">55%</span>
+          <p data-i18n="research.f1">of Gen Z respondents consult reviews from micro-influencers (10,000–100,000 followers) before buying; 51% buy new products on e-commerce platforms because of viral social-media trends.</p>
+          <p class="rs-src" data-i18n="research.f1.s">YouNet Media &amp; YouNet ECI (2025) · online survey of 700 digital consumers</p>
+        </article>
+        <article class="rs-card">
+          <span class="rs-stat">62.8%</span>
+          <p data-i18n="research.f2">of digital consumers order on e-commerce platforms at least once a week. Gen Z (53.4%) and Millennials (46.6%) lead this group.</p>
+          <p class="rs-src" data-i18n="research.f2.s">YouNet Media &amp; YouNet ECI (2025)</p>
+        </article>
+        <article class="rs-card">
+          <span class="rs-stat" data-i18n="research.f3.k">Trust</span>
+          <p data-i18n="research.f3">Trust, ease of use and reputation remain the most important criteria when choosing a platform. Top frustrations include products not matching their description, payment errors and late delivery.</p>
+          <p class="rs-src" data-i18n="research.f3.s">Burrage / Cimigo (2025) · 1,020 Vietnamese consumers aged 18–44</p>
+        </article>
+        <article class="rs-card">
+          <span class="rs-stat">63%</span>
+          <p data-i18n="research.f4">shop through livestreams and 53% through shoppable videos, a shift the report links to KOL reviews.</p>
+          <p class="rs-src" data-i18n="research.f4.s">Burrage / Cimigo (2025)</p>
+        </article>
+      </div>
+
+      <h3 class="rs-sub" data-i18n="research.acad.t">Academic evidence</h3>
+      <div class="rs-grid rs-grid-2">
+        <article class="rs-card">
+          <span class="rs-stat">r = .563</span>
+          <p data-i18n="research.a1">A meta-analysis of 156 studies (214 effect sizes, 69,006 observations) found that every review factor studied affects purchase intention, and that review valence (how positive or negative reviews are) has the strongest effect.</p>
+          <p class="rs-src" data-i18n="research.a1.s">Qiu &amp; Zhang (2024) · findings taken from the published abstract</p>
+        </article>
+        <article class="rs-card">
+          <span class="rs-stat">3.32</span>
+          <p data-i18n="research.a2">In a survey of 361 Vietnamese students in 10 Mekong Delta provinces and cities (January–March 2024), “Shopping on TikTok Shop can be trusted” had the lowest mean of all 28 items. Trust correlated with online impulse buying (r = .524); this is a correlation, not proof of cause.</p>
+          <p class="rs-src" data-i18n="research.a2.s">Phan, Nguyen &amp; Phuc (2024) · convenience sample, one region</p>
+        </article>
+      </div>
+
+      <h3 class="rs-sub" data-i18n="research.map.t">Implications: from research to features</h3>
+      <div class="map-table" role="table" aria-label="Research to feature mapping">
+        <div class="map-row map-headrow" role="row"><span role="columnheader" data-i18n="research.map.h1">Finding</span><span role="columnheader" data-i18n="research.map.h2">TrustLens feature</span></div>
+        <div class="map-row" role="row"><span role="cell" data-i18n="research.m1.a">Review valence drives purchase intention most (Qiu &amp; Zhang, 2024)</span><span role="cell" data-i18n="research.m1.b">AI Review Summary shows both positives and negatives, with counts of supporting reviews</span></div>
+        <div class="map-row" role="row"><span role="cell" data-i18n="research.m2.a">“Not as described” is a top frustration (Cimigo, 2025)</span><span role="cell" data-i18n="research.m2.b">Potential red flag when several reviews say the product differs from its listing</span></div>
+        <div class="map-row" role="row"><span role="cell" data-i18n="research.m3.a">Gen Z leans on influencer reviews and viral trends (YouNet, 2025)</span><span role="cell" data-i18n="research.m3.b">Evidence excerpts: every finding links to real review text and IDs, not to promotional content</span></div>
+        <div class="map-row" role="row"><span role="cell" data-i18n="research.m4.a">Trust is decisive yet rated lowest (Cimigo, 2025; Phan et al., 2024)</span><span role="cell" data-i18n="research.m4.b">Seller credibility indicators limited to fields the data source actually returns; no invented trust score</span></div>
+        <div class="map-row" role="row"><span role="cell" data-i18n="research.m5.a">Trust is associated with impulse buying (Phan et al., 2024)</span><span role="cell" data-i18n="research.m5.b">“Before you buy” checks that slow down a quick decision</span></div>
+      </div>
+
+      <p class="research-note"><span data-i18n="research.ownPtr">The group's own survey (n = 61) is reported separately in <a href="#survey" data-go="survey">Survey Insights</a>, so it is not mixed with the external research.</span></p>
+
+      <h3 class="rs-sub" data-i18n="research.lim.t">Limitations</h3>
+      <ul class="rs-list">
+        <li data-i18n="research.l1">The industry reports are commercial online surveys; their samples and methods are only partly published.</li>
+        <li data-i18n="research.l2">Cimigo's sample covers ages 18–44, wider than TrustLens's 18–24 target group.</li>
+        <li data-i18n="research.l3">Qiu &amp; Zhang (2024) is a global meta-analysis, not specific to Vietnam; we cite only its abstract.</li>
+        <li data-i18n="research.l4">Phan et al. (2024) is a regional convenience sample, and its trust–impulse link is correlational.</li>
+        <li data-i18n="research.l5">None of these sources measures whether TrustLens itself improves shopping decisions.</li>
+      </ul>
+
+      <h3 class="rs-sub" data-i18n="research.ref.t">References (APA 7)</h3>
+      <ol class="refs">
+        <li>Burrage, R. (2025, October 24). <i>Mua sắm trực tuyến</i> [Online shopping]. Cimigo. <a href="https://www.cimigo.com/vi/trends/mua-sam-truc-tuyen/" target="_blank" rel="noopener noreferrer">https://www.cimigo.com/vi/trends/mua-sam-truc-tuyen/</a></li>
+        <li>Phan, D. H., Nguyen, Q. D., &amp; Phuc, V. K. N. (2024). Dataset on Vietnamese students' impulse buying behavior on TikTok shop. <i>Data in Brief, 57</i>, Article 111047. <a href="https://doi.org/10.1016/j.dib.2024.111047" target="_blank" rel="noopener noreferrer">https://doi.org/10.1016/j.dib.2024.111047</a></li>
+        <li>Qiu, K., &amp; Zhang, L. (2024). How online reviews affect purchase intention: A meta-analysis across contextual and cultural factors. <i>Data and Information Management, 8</i>(2), Article 100058. <a href="https://doi.org/10.1016/j.dim.2023.100058" target="_blank" rel="noopener noreferrer">https://doi.org/10.1016/j.dim.2023.100058</a></li>
+        <li>YouNet Media &amp; YouNet ECI. (2025, September 18). <i>Báo cáo YouNet Vietnam e-Commerce Intelligence 2025: Từ hành vi người tiêu dùng đến bứt phá tăng trưởng trên TMĐT</i> [YouNet Vietnam e-Commerce Intelligence 2025 report: From consumer behaviour to growth breakthroughs in e-commerce]. YouNet Group. <a href="https://www.younetgroup.com/vi/bao-cao-younet-vietnam-e-commerce-intelligence-2025-tu-hanh-vi-nguoi-tieu-dung-den-but-pha-tang-truong-tren-tmdt/" target="_blank" rel="noopener noreferrer">https://www.younetgroup.com/vi/bao-cao-younet-vietnam-e-commerce-intelligence-2025-tu-hanh-vi-nguoi-tieu-dung-den-but-pha-tang-truong-tren-tmdt/</a></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- F. How it works -->
+  <section class="section" id="how">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker" data-i18n="how.kicker">Workflow</span>
+        <h2 data-i18n="how.title">How TrustLens works</h2>
+        <p data-i18n="how.lead">Six steps from a product link to a clearer decision.</p>
+      </div>
+      <ol class="steps">
+        <li class="step"><div class="step-top"><span class="step-num">1</span><span class="step-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></span></div><h3 data-i18n="how.s1.t">Submit a link or reviews</h3><p data-i18n="how.s1.d">Paste a TikTok Shop product link or enter review text.</p><span class="step-arrow" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span></li>
+        <li class="step"><div class="step-top"><span class="step-num">2</span><span class="step-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg></span></div><h3 data-i18n="how.s2.t">Retrieve available data</h3><p data-i18n="how.s2.d">Collect the product and review data that can be accessed.</p><span class="step-arrow" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span></li>
+        <li class="step"><div class="step-top"><span class="step-num">3</span><span class="step-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span></div><h3 data-i18n="how.s3.t">Analyse sentiment</h3><p data-i18n="how.s3.d">Sort each review as positive, mixed or negative.</p><span class="step-arrow" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span></li>
+        <li class="step"><div class="step-top"><span class="step-num">4</span><span class="step-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4h11l-1.5 4L16 12H5"/></svg></span></div><h3 data-i18n="how.s4.t">Find themes and red flags</h3><p data-i18n="how.s4.d">Group recurring topics and spot potential warning signs.</p><span class="step-arrow" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span></li>
+        <li class="step"><div class="step-top"><span class="step-num">5</span><span class="step-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/></svg></span></div><h3 data-i18n="how.s5.t">Generate a report</h3><p data-i18n="how.s5.d">Build a structured report with supporting review excerpts.</p><span class="step-arrow" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg></span></li>
+        <li class="step"><div class="step-top"><span class="step-num">6</span><span class="step-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></span></div><h3 data-i18n="how.s6.t">Decide with more context</h3><p data-i18n="how.s6.d">Use the evidence to make a more informed purchasing decision.</p></li>
+      </ol>
+      <h3 class="rs-sub" data-i18n="stack.t">Technology stack</h3>
+      <div class="stack-grid">
+        <article class="feature"><span class="feature-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg></span><h3 data-i18n="stack.r.t">Review retrieval</h3><p data-i18n="stack.r.d">Accessible reviews are fetched on the server through a licensed data provider, page by page, with no scraping.</p></article>
+        <article class="feature"><span class="feature-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="3"/><path d="M9 1v4M15 1v4M9 19v4M15 19v4M1 9h4M1 15h4M19 9h4M19 15h4"/></svg></span><h3 data-i18n="stack.a.t">AI &amp; NLP</h3><p data-i18n="stack.a.d">Google Gemini extracts sentiment, themes and recurring complaints, in batches that cover every retrieved review.</p></article>
+        <article class="feature"><span class="feature-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><h3 data-i18n="stack.d.t">Data analytics</h3><p data-i18n="stack.d.d">Counts, rating distributions and review patterns are computed from the actual records, never estimated.</p></article>
+        <article class="feature"><span class="feature-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6l8-3z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></span><h3 data-i18n="stack.s.t">Transparency signals</h3><p data-i18n="stack.s.d">Each finding links to original review excerpts and IDs, and flags conflicting feedback with its evidence.</p></article>
+      </div>
+      <p class="research-note" id="stack-status" role="status"><span data-i18n="stack.status">Checking which services are configured on this deployment…</span></p>
+
+    </div>
+  </section>
+
+  <!-- S5. Survey insights: figures recomputed from the 61 responses (TikTok Shop & Gen Z Consumer Behaviour, 10–14 Oct 2026) -->
+  <section class="section survey" id="survey">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker" data-i18n="sv.kicker">Our primary survey</span>
+        <h2 data-i18n="sv.title">Survey insights</h2>
+        <p data-i18n="sv.lead">The group's online bilingual questionnaire “TikTok Shop &amp; Gen Z Consumer Behaviour” received 61 responses between 10 and 14 October 2026. Several questions allowed more than one answer, so percentages do not add up to 100%.</p>
+      </div>
+      <div class="sv-grid">
+        <article class="sv-card"><div class="ring" style="--p:70.5" role="img" aria-label="70.5%"><span>70.5%</span></div>
+          <h3 data-i18n="sv.s1.t">Customer reviews matter</h3><p class="sv-n">43/61</p><p class="sv-q" data-i18n="sv.s1.q">chose “Customer reviews” when asked what they check before buying a product from TikTok (Q10).</p></article>
+        <article class="sv-card"><div class="ring" style="--p:47.5" role="img" aria-label="47.5%"><span>47.5%</span></div>
+          <h3 data-i18n="sv.s2.t">Promotion credibility</h3><p class="sv-n">29/61</p><p class="sv-q" data-i18n="sv.s2.q">find it difficult to distinguish paid promotions from genuine recommendations (Q9).</p></article>
+        <article class="sv-card"><div class="ring" style="--p:50.8" role="img" aria-label="50.8%"><span>50.8%</span></div>
+          <h3 data-i18n="sv.s3.t">Review summary need</h3><p class="sv-n">31/61</p><p class="sv-q" data-i18n="sv.s3.q">said a summary of common customer complaints would help them decide (Q11).</p></article>
+      </div>
+      <h3 class="rs-sub" data-i18n="sv.ch.t">Key challenges in evaluating product and seller credibility</h3>
+      <div class="sv-grid sv-grid-4">
+        <article class="sv-card"><div class="ring" style="--p:47.5" role="img" aria-label="47.5%"><span>47.5%</span></div>
+          <h3 data-i18n="sv.c1.t">Promotion ambiguity</h3><p class="sv-n">29/61</p><p class="sv-q" data-i18n="sv.c1.q">find it difficult to distinguish paid promotions from genuine recommendations (Q9).</p></article>
+        <article class="sv-card"><div class="ring" style="--p:41.0" role="img" aria-label="41.0%"><span>41.0%</span></div>
+          <h3 data-i18n="sv.s4.t">Product quality uncertainty</h3><p class="sv-n">25/61</p><p class="sv-q" data-i18n="sv.s4.q">are uncertain about the actual product quality (Q9).</p></article>
+        <article class="sv-card"><div class="ring" style="--p:39.3" role="img" aria-label="39.3%"><span>39.3%</span></div>
+          <h3 data-i18n="sv.s5.t">Review bias concerns</h3><p class="sv-n">24/61</p><p class="sv-q" data-i18n="sv.s5.q">think reviews may be biased (Q9).</p></article>
+        <article class="sv-card sv-takeaway"><span class="pill pill-soft" data-i18n="sv.tk.tag">Key takeaway</span><p data-i18n="sv.tk.d">Survey findings highlight the need for clearer review insights and more transparent product and seller information.</p></article>
+      </div>
+      <div class="sv-notes">
+        <p><b data-i18n="sv.imp.t">What this means for TrustLens:</b> <span data-i18n="sv.imp.d">respondents asked for summaries of recurring complaints more than for AI as such (only 14/61, 23.0%, chose “AI-generated review summary”). TrustLens therefore leads with complaint summaries backed by review evidence.</span></p>
+        <p><b data-i18n="sv.lim.t">Limitations:</b> <span data-i18n="sv.lim.d">a small convenience sample, so the results describe these 61 respondents only and are not representative of Vietnamese Gen Z. 53 of 61 were aged 18–23; the others chose under 18 (1), 24–27 (5) or over 27 (2). Answers are self-reported.</span></p>
+        <p class="sv-src" data-i18n="sv.src">Source: group survey (n = 61). Each figure was recomputed from the response spreadsheet.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- D. Features -->
+  <section class="section features" id="features">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker" data-i18n="sol.kicker">Our proposed solution</span>
+        <h2 data-i18n="sol.title">TrustLens: an AI-powered product review &amp; credibility assistant</h2>
+        <p data-i18n="sol.lead">TrustLens is a proposed AI-powered decision-support tool that helps Vietnamese Gen Z evaluate product and seller credibility before purchasing on TikTok Shop.</p>
+        <h3 class="rs-sub" style="margin:.4rem 0 0" data-i18n="sol.core">Core features</h3>
+      </div>
+      <div class="feature-grid">
+        <article class="feature"><span class="feature-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h10M7 17h6"/></svg></span><h3 data-i18n="feat.1.t">AI Review Summary</h3><p data-i18n="feat.1.d">Summarises recurring customer experiences and complaints, and says how many reviews were analysed.</p><p class="needs"><b data-i18n="feat.needs">Needs:</b> <span data-i18n="feat.1.n">review text (retrieved or pasted) and AI configured on the server.</span></p></article>
+        <article class="feature"><span class="feature-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9l1.5-5h13L20 9"/><path d="M4 9v11h16V9"/><path d="M10 20v-5h4v5"/></svg></span><h3 data-i18n="feat.2.t">Seller Credibility Indicators</h3><p data-i18n="feat.2.d">Organises available seller information and review patterns into transparent signals. No invented trust score.</p><p class="needs"><b data-i18n="feat.needs">Needs:</b> <span data-i18n="feat.2.n">seller fields from the data source or entered by you; otherwise shown as “not available”.</span></p></article>
+        <article class="feature"><span class="feature-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg></span><h3 data-i18n="feat.3.t">Potential Red-Flag Alerts</h3><p data-i18n="feat.3.d">Highlights conflicting reviews or recurring concerns for further investigation.</p><p class="needs"><b data-i18n="feat.needs">Needs:</b> <span data-i18n="feat.3.n">several reviews showing the same pattern.</span></p><p class="note" data-i18n="f3.n">A red flag is a potential indicator, not proof of fraud.</p></article>
+        <article class="feature"><span class="feature-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></span><h3 data-i18n="feat.4.t">Key Information Highlights</h3><p data-i18n="feat.4.d">Links generated insights to supporting reviews where available, with original excerpts and review IDs.</p><p class="needs"><b data-i18n="feat.needs">Needs:</b> <span data-i18n="feat.4.n">the original review text and IDs; AI wording is always labelled as AI.</span></p></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- E. Product demo -->
+  <section class="section" id="demo">
+    <div class="wrap">
+      <div class="demo-head">
+        <div class="section-head" style="margin-bottom:1.5rem">
+          <span class="kicker" data-i18n="demo.kicker">Product demo</span>
+          <h2 data-i18n="demo.title">Try it on a demo product</h2>
+          <p data-i18n="demo.lead">Pick a product to open its analysis in the dashboard.</p>
+        </div>
+      </div>
+      <p class="demo-cta"><a class="btn btn-primary btn-sm" href="#dashboard" data-go="dashboard" data-i18n="demo.analyse">Analyse a product link</a> <span data-i18n="demo.analyseNote">Live analysis uses real reviews only; demo products are clearly labelled.</span></p>
+      <div class="demo-row" id="demo-row"></div>
+      <p class="demo-disclaimer" data-i18n="demo.disclaimer">Demo products, reviews, ratings and seller details are illustrative data written for this prototype. They don't come from real TikTok Shop customers or sellers.</p>
+    </div>
+  </section>
+
+  <!-- S9. Implementation roadmap (from the group poster; proposed work is marked as planned) -->
+  <section class="section roadmap" id="roadmap">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker" data-i18n="rm.kicker">Implementation roadmap</span>
+        <h2 data-i18n="rm.title">From prototype to controlled scale-up</h2>
+        <p data-i18n="rm.lead">A staged plan. Each phase starts only when the previous one meets its quality criteria.</p>
+      </div>
+      <ol class="rm-grid">
+        <li class="rm-card"><span class="pill pill-soft" data-i18n="rm.now">In progress</span><h3><span class="step-num">1</span> <span data-i18n="rm.p1.t">Prototype &amp; pilot</span></h3>
+          <ul><li data-i18n="rm.p1.a">Build a prototype using sample reviews.</li><li data-i18n="rm.p1.b">Test with Gen Z users; assess summary accuracy and usability.</li></ul></li>
+        <li class="rm-card"><span class="pill pill-line" data-i18n="rm.planned">Planned</span><h3><span class="step-num">2</span> <span data-i18n="rm.p2.t">Validation &amp; refinement</span></h3>
+          <ul><li data-i18n="rm.p2.a">Validate AI summaries against manually reviewed samples.</li><li data-i18n="rm.p2.b">Test false alerts, data gaps and bias.</li><li data-i18n="rm.p2.c">Improve accuracy, usability, transparency and accessibility.</li><li data-i18n="rm.p2.d">Explore permitted data access and integration options.</li></ul></li>
+        <li class="rm-card"><span class="pill pill-line" data-i18n="rm.planned">Planned</span><h3><span class="step-num">3</span> <span data-i18n="rm.p3.t">Controlled scale-up</span></h3>
+          <ul><li data-i18n="rm.p3.a">Scale only after quality criteria are met.</li><li data-i18n="rm.p3.b">Monitor accuracy, usability and transparency.</li><li data-i18n="rm.p3.c">Refine using user feedback.</li></ul></li>
+      </ol>
+      <div class="rm-status">
+        <p><b data-i18n="rm.done.t">Built so far:</b> <span data-i18n="rm.done.d">this working website, with demo datasets, pasted and imported reviews, product-link retrieval through a data provider, batched AI analysis and evidence-linked results.</span></p>
+        <p><b data-i18n="rm.todo.t">Not done yet:</b> <span data-i18n="rm.todo.d">validation of AI summaries against manually reviewed samples, and testing with Gen Z users. Results on this site are therefore not yet validated.</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- S10. Evaluation & expected impact (expected, not measured) -->
+  <section class="section evaluation" id="evaluation">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker" data-i18n="ev2.kicker">Evaluation &amp; expected impact</span>
+        <h2 data-i18n="ev2.title">How will TrustLens be evaluated?</h2>
+      </div>
+      <div class="ev2-grid">
+        <article class="feature"><span class="feature-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg></span><h3 data-i18n="ev2.c1.t">Review summary accuracy</h3><p data-i18n="ev2.c1.d">Evaluate whether AI-generated summaries accurately reflect customer reviews and recurring complaints.</p></article>
+        <article class="feature"><span class="feature-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg></span><h3 data-i18n="ev2.c2.t">User trust &amp; usability</h3><p data-i18n="ev2.c2.d">Pilot-test with Gen Z shoppers to assess clarity, usefulness and ease of use.</p></article>
+        <article class="feature"><span class="feature-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6l8-3z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></span><h3 data-i18n="ev2.c3.t">Transparency &amp; AI limitations</h3><p data-i18n="ev2.c3.d">Provide evidence for risk alerts and communicate uncertainty clearly, avoiding claims of fraud or poor product quality.</p></article>
+        <article class="feature ev2-impact"><span class="pill pill-line" data-i18n="ev2.expected">Expected, not yet measured</span><h3 data-i18n="ev2.i.t">Expected impact</h3>
+          <ul><li data-i18n="ev2.i1">More informed and confident purchasing decisions for Vietnamese Gen Z.</li><li data-i18n="ev2.i2">A clearer understanding of what reviews actually say.</li><li data-i18n="ev2.i3">Better visibility into the seller signals the data supports.</li></ul></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- H. FAQ -->
+  <section class="section" id="faq" style="padding-top:0">
+    <div class="wrap faq-grid">
+      <div class="section-head">
+        <span class="kicker" data-i18n="faq.kicker">FAQ</span>
+        <h2 data-i18n="faq.title">Questions about TrustLens</h2>
+        <p data-i18n="faq.lead">What this prototype does today, and where its limits are.</p>
+      </div>
+      <div class="faq-list">
+        <details><summary><span data-i18n="faq.q1">How does TrustLens work?</span><span class="plus" aria-hidden="true">+</span></summary><p class="answer" data-i18n="faq.a1">You paste a product's reviews or open a demo product. TrustLens sorts each review by sentiment, groups recurring topics, runs a set of red-flag checks and builds a report that links every finding to the reviews behind it. For a product link, TrustLens retrieves the reviews through a licensed data provider, counts them, and sends them in batches to Google Gemini on the server for an evidence-linked summary. Reviews you paste or import go through the same AI steps. Demo products use only the rule-based checks in your browser and are never sent anywhere.</p></details>
+        <details><summary><span data-i18n="faq.q2">Can TrustLens analyse every TikTok Shop product?</span><span class="plus" aria-hidden="true">+</span></summary><p class="answer" data-i18n="faq.a2">Only products the data provider can access. Coverage, page limits and credits depend on the provider, and TrustLens shows exactly how many reviews it retrieved versus how many the source reports. If a link fails, you can paste or import reviews instead. It reads Vietnamese and English, recognises most Vietnamese keywords with or without diacritics, and gives steadier results with 10 or more reviews. Slang, sarcasm, emoji-only reviews and other languages may be misread.</p></details>
+        <details><summary><span data-i18n="faq.q3">How does TrustLens identify potential suspicious reviews?</span><span class="plus" aria-hidden="true">+</span></summary><p class="answer" data-i18n="faq.a3">It looks for near-identical wording across different reviews, a high share of very short generic praise, star ratings that contradict the review text, mentions of vouchers or gifts given for reviews, several reviews saying the product differs from its listing, and claims that the product is fake. Each flag lists the reviews that triggered it.</p></details>
+        <details><summary><span data-i18n="faq.q4">Does a red flag prove a review is fake?</span><span class="plus" aria-hidden="true">+</span></summary><p class="answer" data-i18n="faq.a4">No. A red flag is a potential indicator, not proof. Real buyers often use the same short phrases, and a listing can be accurate even when a few people disagree with it. Treat a flag as a reason to read more closely, look at buyer photos and videos, and compare other sellers.</p></details>
+        <details><summary><span data-i18n="faq.q5">What happens if review data cannot be retrieved?</span><span class="plus" aria-hidden="true">+</span></summary><p class="answer" data-i18n="faq.a5">TrustLens says that no data was retrieved and asks you to paste the reviews instead. It never fills the gap with made-up reviews, ratings or seller details. If retrieval stops part-way (for example at a page limit or when provider credits run out), TrustLens keeps the reviews it did retrieve, marks the result as partial and says why.</p></details>
+        <details><summary><span data-i18n="faq.q6">How does TrustLens handle user data?</span><span class="plus" aria-hidden="true">+</span></summary><p class="answer" data-i18n="faq.a6">Demo products are analysed in your browser. Product links and reviews you paste or import are sent to our server, which retrieves reviews through the data provider and analyses them with Google Gemini; API keys stay on the server. If you save a report, it's stored in this browser's local storage until you delete it. TrustLens doesn't ask for your name, account or TikTok login.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- I. Final CTA -->
+  <section class="cta" id="cta">
+    <div class="wrap">
+      <div class="cta-box">
+        <span class="cta-ring" aria-hidden="true"></span>
+        <h2 data-i18n="cta.title">Ready to Shop Smarter?</h2>
+        <p data-i18n="cta.sub">Turn overwhelming reviews into clearer insights.</p>
+        <a class="btn" href="#dashboard" data-go="dashboard" data-i18n="cta.btn">Try TrustLens Now</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- G. Analysis dashboard -->
+<section class="dash" id="dashboard" hidden>
+  <div class="wrap">
+    <div class="dash-top">
+      <div>
+        <a class="crumb" href="#home" data-go="home"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg><span data-i18n="dash.back">Back to home</span></a>
+        <h1 data-i18n="dash.title">Review analysis</h1>
+      </div>
+    </div>
+    <div class="dash-grid">
+      <aside class="side" aria-label="Analysis input">
+        <div class="panel">
+          <form id="dash-form" novalidate>
+            <div>
+              <label class="field-label" for="dash-url" data-i18n="side.link">TikTok Shop product link</label>
+              <input class="input" id="dash-url" type="url" inputmode="url" autocomplete="off" placeholder="https://www.tiktok.com/…" >
+              <p class="field-error" id="dash-url-error" hidden></p>
+            </div>
+            <div>
+              <label class="field-label" for="dash-reviews" data-i18n="side.reviews">Reviews</label>
+              <textarea class="textarea" id="dash-reviews" placeholder="5★ Âm thanh hay, pin trâu&#10;2★ Battery life is much shorter than the listing says" data-i18n-ph="hero.manualPh"></textarea>
+              <p class="help" data-i18n="side.reviewsHelp">One review per line. Start a line with a rating such as 5★ to include it.</p>
+              <label class="field-label" for="dash-file" data-i18n="side.import">Or import a CSV / JSON file</label>
+              <input class="input file-input" id="dash-file" type="file" accept=".csv,.json,application/json,text/csv">
+              <p class="help" id="dash-file-status" role="status" data-i18n="side.importHelp">CSV columns text/review/content (+ optional rating, id, date). JSON: an array or {"reviews": [...]}.</p>
+            </div>
+            <details class="details-box" id="details-box">
+              <summary data-i18n="side.details">Product and seller details (optional)</summary>
+              <div class="details-fields">
+                <div class="full"><label class="field-label" for="d-product" data-i18n="side.product">Product name</label><input class="input" id="d-product" autocomplete="off"></div>
+                <div class="full"><label class="field-label" for="d-shop" data-i18n="side.shop">Shop name</label><input class="input" id="d-shop" autocomplete="off"></div>
+                <div><label class="field-label" for="d-rating" data-i18n="side.rating">Shop rating /5</label><input class="input" id="d-rating" inputmode="decimal" autocomplete="off"></div>
+                <div><label class="field-label" for="d-sold" data-i18n="side.sold">Items sold</label><input class="input" id="d-sold" autocomplete="off"></div>
+                <div><label class="field-label" for="d-since" data-i18n="side.since">Selling since</label><input class="input" id="d-since" autocomplete="off"></div>
+                <div><label class="field-label" for="d-response" data-i18n="side.response">Response rate</label><input class="input" id="d-response" autocomplete="off"></div>
+              </div>
+              <p class="help" data-i18n="side.detailsHelp">Copy these from the shop page if you want them in the report. TrustLens can't verify them.</p>
+            </details>
+            <div class="side-actions">
+              <button class="btn btn-primary" type="submit" data-i18n="side.analyse">Analyse reviews</button>
+              <button class="btn btn-ghost" type="button" id="dash-clear" data-i18n="side.clear">Clear</button>
+            </div>
+          </form>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2 data-i18n="side.demos">Demo products</h2><span class="pill pill-demo" data-i18n="common.demo">Demo</span></div>
+          <div class="demo-list" id="side-demos"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2 data-i18n="side.saved">Saved reports</h2></div>
+          <div class="saved-list" id="saved-list"></div>
+        </div>
+      </aside>
+      <div id="dash-main" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- J. Footer -->
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <h3 data-i18n="footer.about.t">About TrustLens</h3>
+        <p data-i18n="footer.about.d">A decision-support prototype that helps Vietnamese Gen Z shoppers read TikTok Shop reviews more critically. TrustLens doesn't guarantee that a product or seller is trustworthy.</p>
+      </div>
+      <div>
+        <h3 data-i18n="footer.explore">Explore</h3>
+        <ul>
+          <li><a href="#problem" data-go="problem" data-i18n="nav.problem">Problem</a></li>
+          <li><a href="#research" data-go="research" data-i18n="nav.research">Research Insights</a></li>
+          <li><a href="#how" data-go="how" data-i18n="nav.how">How It Works</a></li>
+          <li><a href="#survey" data-go="survey" data-i18n="nav.survey">Survey</a></li>
+          <li><a href="#features" data-go="features" data-i18n="nav.features">Features</a></li>
+          <li><a href="#roadmap" data-go="roadmap" data-i18n="nav.roadmap">Roadmap</a></li>
+          <li><a href="#evaluation" data-go="evaluation" data-i18n="nav.eval">Evaluation</a></li>
+          <li><a href="#faq" data-go="faq" data-i18n="nav.faq">FAQ</a></li>
+          <li><a href="#dashboard" data-go="dashboard" data-i18n="footer.dashboard">Analysis dashboard</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 data-i18n="footer.privacy.t">Privacy</h3>
+        <p data-i18n="footer.privacy.d">Demo products are analysed in your browser. Pasted or imported reviews, product links and retrieved reviews are processed on our server and by Google Gemini. Saved reports stay in this browser until you delete them.</p>
+      </div>
+      <div>
+        <h3 data-i18n="footer.limits.t">AI limitations and data sources</h3>
+        <p data-i18n="footer.limits.d1">Results come from automated text analysis and can be wrong. Red flags are potential indicators, not proof of fake reviews or fraud.</p>
+        <p data-i18n="footer.limits.d2">Demo products, reviews, ratings and seller details are illustrative. TrustLens isn't affiliated with TikTok or TikTok Shop.</p>
+      </div>
+    </div>
+    <div class="footer-sources">
+      <h3 data-i18n="footer.src.t">Research sources</h3>
+      <ul>
+        <li><a href="https://www.younetgroup.com/vi/bao-cao-younet-vietnam-e-commerce-intelligence-2025-tu-hanh-vi-nguoi-tieu-dung-den-but-pha-tang-truong-tren-tmdt/" target="_blank" rel="noopener noreferrer">YouNet Media &amp; YouNet ECI (2025)</a></li>
+        <li><a href="https://www.cimigo.com/vi/trends/mua-sam-truc-tuyen/" target="_blank" rel="noopener noreferrer">Burrage / Cimigo (2025)</a></li>
+        <li><a href="https://doi.org/10.1016/j.dim.2023.100058" target="_blank" rel="noopener noreferrer">Qiu &amp; Zhang (2024)</a></li>
+        <li><a href="https://doi.org/10.1016/j.dib.2024.111047" target="_blank" rel="noopener noreferrer">Phan, Nguyen &amp; Phuc (2024)</a></li>
+        <li><a href="#survey" data-go="survey" data-i18n="footer.src.survey">Group survey (n = 61)</a></li>
+      </ul>
+      <p data-i18n="footer.project">University project by Group JavaScript · Lecturer: Pham Thi Nhung · Western Sydney University &amp; UEH International School of Business.</p>
+    </div>
+    <div class="footer-bottom">
+      <span data-i18n="footer.copy">© 2026 TrustLens prototype</span>
+      <span data-i18n="footer.made">Made for Vietnamese Gen Z shoppers</span>
+      <span class="credit">Hero particle effect adapted from <a href="https://guglielmogiannattasio.it" target="_blank" rel="noopener noreferrer">guglielmogiannattasio.it</a></span>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script id="engine">
+/* ---------- Demo data (illustrative, written for this prototype) ---------- */
+const DEMOS = [
+  { id: 'headphones', name: { en: 'Wireless headphones', vi: 'Tai nghe không dây' }, cat: { en: 'Audio', vi: 'Âm thanh' }, price: '389.000₫',
+    seller: { shop: 'AudioNest Store', rating: '4.7', sold: '12.400', since: '2023', response: '92%' },
+    reviews: [
+      [5, 'Âm thanh hay, bass mạnh, pin dùng được cả ngày. Rất đáng tiền.'],
+      [5, 'Giao hàng nhanh, đóng gói cẩn thận. Kết nối bluetooth ổn định.'],
+      [4, 'Sound is good for the price but the ear cups get warm after an hour.'],
+      [2, 'Mic rất tệ, gọi điện người kia nghe không rõ. Thất vọng.'],
+      [5, 'Tốt'],
+      [3, 'Pin không được như quảng cáo, chỉ khoảng 6 tiếng thay vì 30 tiếng.'],
+      [5, 'Love the design, comfortable and the bass is great!'],
+      [1, 'Dùng được 2 tuần thì bên trái bị hỏng, shop chưa phản hồi.'],
+      [4, 'Âm thanh ổn, nhưng đệm tai hơi mỏng.'],
+      [5, 'Shop tư vấn nhiệt tình, hàng giống hình.'],
+      [2, 'Battery life is nowhere near the 30 hours in the description. About 7 hours for me.'],
+      [5, 'Đẹp'],
+    ] },
+  { id: 'lipcare', name: { en: 'Tinted lip balm', vi: 'Son dưỡng có màu' }, cat: { en: 'Lip care', vi: 'Chăm sóc môi' }, price: '129.000₫',
+    seller: { shop: 'Moi Xinh Beauty', rating: '4.8', sold: '31.000', since: '2024', response: '98%' },
+    reviews: [
+      [5, 'Son dưỡng thơm, mềm môi, dùng thích lắm'],
+      [5, 'Sản phẩm tốt, sẽ ủng hộ shop tiếp'],
+      [5, 'Sản phẩm tốt, sẽ ủng hộ shop tiếp!!'],
+      [5, 'Tốt lắm'],
+      [5, 'Được shop tặng voucher khi đánh giá 5 sao nên mình đánh giá luôn'],
+      [5, 'Good product, will buy again'],
+      [4, 'Dưỡng ẩm ổn nhưng hơi bết dính khi mới thoa.'],
+      [2, 'Môi mình bị khô hơn sau 3 ngày dùng, không hợp với mình.'],
+      [5, 'Ok'],
+      [5, 'Very moisturizing, the scent is light and not too sweet.'],
+      [3, 'Màu thực tế đậm hơn trong video.'],
+      [5, 'Đẹp, xinh'],
+      [5, 'Thơm'],
+    ] },
+  { id: 'serum', name: { en: 'Hydrating face serum', vi: 'Serum cấp ẩm' }, cat: { en: 'Skincare', vi: 'Chăm sóc da' }, price: '245.000₫',
+    seller: { shop: 'GlowLab Official', rating: '4.5', sold: '8.900', since: '2022', response: '85%' },
+    reviews: [
+      [5, 'Da mình đỡ khô hẳn sau 1 tuần, thấm nhanh không bết.'],
+      [4, 'Texture is light and absorbs quickly. Too early to see results.'],
+      [2, 'Bị nổi mụn li ti sau 4 ngày dùng, mình phải ngưng.'],
+      [5, 'Hàng chính hãng, date xa, đóng gói kỹ.'],
+      [1, 'Kích ứng, da đỏ rát. Hỏi shop thì bảo do da mình yếu.'],
+      [5, 'Mùi hơi hắc và bị nổi mụn, không dùng nữa.'],
+      [4, 'Giá hơi cao nhưng chất lượng ổn.'],
+      [3, 'No difference after two weeks.'],
+      [5, 'Mình có mã giảm giá từ shop để đổi lấy review, sản phẩm dùng cũng được.'],
+      [2, 'Caused breakouts on my chin. Not for sensitive skin.'],
+      [5, 'Thấm nhanh, da mềm hơn.'],
+      [4, 'Giao hàng hơi chậm nhưng hàng ok.'],
+    ] },
+  { id: 'fan', name: { en: 'Portable mini fan', vi: 'Quạt mini cầm tay' }, cat: { en: 'Electronics', vi: 'Điện tử' }, price: '159.000₫',
+    seller: { shop: 'CoolGo Mall', rating: '4.6', sold: '54.000', since: '2025', response: '71%' },
+    reviews: [
+      [5, 'Quạt mát, pin trâu, nhỏ gọn tiện mang đi học. Rất đáng mua!'],
+      [5, 'Quạt mát, pin trâu, nhỏ gọn tiện mang đi làm. Rất đáng mua!'],
+      [5, 'Quạt mát pin trâu nhỏ gọn tiện mang theo, rất đáng mua'],
+      [5, 'Super cool fan, strong wind, battery lasts long. Highly recommend!'],
+      [5, 'Super cool fan, strong wind, battery lasts long. Highly recommend!!'],
+      [2, 'Gió yếu hơn trong video nhiều, tốc độ 3 cũng chỉ như quạt nhỏ.'],
+      [1, 'Sạc không vào sau 1 tuần. Đã nhắn shop nhưng chưa thấy trả lời.'],
+      [4, 'Nhỏ gọn, dễ thương, tiếng hơi ồn ở tốc độ cao.'],
+      [5, 'Tốt'],
+      [3, 'Fan is okay but the clip broke on day three.'],
+      [5, 'Đẹp, mát'],
+      [2, 'Not as strong as shown in the video.'],
+    ] },
+];
+
+/* ---------- Rule-based analysis engine ----------
+   Phrases are matched without diacritics unless prefixed with "@", which keeps the accents
+   for words that become ambiguous without them (e.g. "kém" vs "kem"). */
+const POS = ['good','great','love','loved','excellent','amazing','perfect','recommend','highly recommend','worth it','worth','comfortable','fast','quick','quickly','nice','beautiful','cute','happy','satisfied','smooth','soft','moisturizing','absorbs quickly','strong','lasts long','durable','authentic','genuine','as described','will buy again','buy again','best','cool','okay','ok','fine','clear','stable','well made','well packed','helpful',
+  'tot','tuyet voi','dang tien','dang mua','hai long','thich','xin xo','giong hinh','giong mo ta','chinh hang','nhanh','can than','nhiet tinh','de thuong','nho gon','on dinh','mem','pin trau','ung ho','se mua lai','am thanh hay','rat hay','hay lam','cung duoc','dung duoc ca ngay','chat luong tot','oke','okela','oki',
+  '@đẹp','@xinh','@mát','@ổn','@mê','@xịn','@ưng','@êm','@tiện','@thơm','@thấm nhanh','@kỹ','@mạnh','@rẻ'];
+const NEG = ['bad','terrible','worst','awful','poor','broke','broken','stopped working','disappointed','disappointing','waste','refund','fake','not as described','nowhere near','cheap quality','defective','faulty','slow','late','noisy','sticky','breakouts','breakout','irritation','rash','itchy','no difference','weak','useless','not working',"doesn't work",'never again','scam','misleading','get warm','gets warm','not for','than shown','than in the video','different from',
+  'that vong','kem chat luong','te hai','khong giong','khong nhu quang cao','khong duoc nhu','phi tien','lua dao','hang gia','khong chinh hang','sac khong vao','chua phan hoi','chua tra loi','chua thay tra loi','khong tra loi','khong phan hoi','noi mun','kich ung','do rat','khong hop','khong dung nua','khong ro','khong khac biet','gia hoi cao','hon trong video','khac hinh','khac video','khac mo ta','bi loi',
+  '@tệ','@dở','@xấu','@kém','@lỗi','@hỏng','@hư','@chậm','@ồn','@yếu','@mỏng','@khô','@bết','@dính','@hắc','@ngưng','@rách','@chán','@mắc','@đắt'];
+const NEGATORS = new Set(['không','ko','k','kh','hông','hok','chưa','chẳng','chả','đỡ','not','no','never',"isn't","don't","doesn't","wasn't","didn't","won't",'hardly','barely']);
+const INCENTIVE = ['voucher','ma giam gia','qua tang','tang qua','duoc tang','shop tang','doi lay','danh gia 5 sao','in exchange','for a review','for review','free product','gifted','received this free','hoan tien khi danh gia'];
+const THEMES = [
+  { id: 'quality', kw: ['quality','material','build quality','chat luong','chat lieu'] },
+  { id: 'delivery', kw: ['delivery','shipping','shipped','arrived','giao hang','van chuyen','shipper','@ship'] },
+  { id: 'packaging', kw: ['packaging','package','packed','dong goi','@hộp'] },
+  { id: 'price', kw: ['price','cheap','expensive','worth','value','money','@giá','gia ca','dang tien','dang mua','@rẻ','@mắc','@đắt','phi tien'] },
+  { id: 'listing', kw: ['as described','as shown','description','advertised','picture','photo','video','listing','giong hinh','giong mo ta','mo ta','quang cao','@hình','khac hinh'] },
+  { id: 'durability', kw: ['broke','broken','stopped working','durable','lasted','clip','@bền','@hỏng','@hư','sac khong vao'] },
+  { id: 'service', kw: ['seller','customer service','reply','replied','respond','response','refund','return','tu van','phan hoi','tra loi','doi tra','hoan tien','@shop'] },
+  { id: 'authenticity', kw: ['fake','authentic','genuine','original','chinh hang','hang gia','@hàng giả','@auth'] },
+  { id: 'battery', kw: ['battery','charge','charging','@pin','@sạc'] },
+  { id: 'performance', kw: ['sound','bass','mic','audio','wind','airflow','noise','noisy','am thanh','@gió','@ồn','bluetooth','ket noi','toc do','@mạnh','strong'] },
+  { id: 'skin', kw: ['skin','breakout','breakouts','acne','irritation','rash','sensitive','@da','@mụn','noi mun','kich ung','@môi','lips'] },
+  { id: 'texture', kw: ['texture','scent','smell','sticky','absorbs','moisturizing','@mùi','@thơm','@thấm','@bết','@dính','duong am','@màu','color','colour'] },
+  { id: 'comfort', kw: ['comfortable','comfort','ear cups','ear cup','dem tai','@đeo','nho gon','compact','lightweight'] },
+];
+const LISTING_RE = /quang cao|video|hinh|mo ta|description|advertis|listing|as shown|picture|photo/;
+const AUTH_NEG_RE = /fake|hang gia|khong chinh hang|not authentic|not genuine|knock ?off/;
+
+const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function strip(s) {
+  let o = '';
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if (ch === 'đ') { o += 'd'; continue; }
+    const b = ch.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    o += b.length === 1 ? b : ch;
+  }
+  return o;
+}
+function compile(list, pol) {
+  return list.map(p => {
+    const acc = p[0] === '@'; const ph = acc ? p.slice(1) : p;
+    return { re: new RegExp('(?<![\\p{L}\\p{N}])' + escRe(ph) + '(?![\\p{L}\\p{N}])', 'gu'), acc, pol, len: ph.length };
+  }).sort((a, b) => b.len - a.len);
+}
+const SENT = compile(POS, 1).concat(compile(NEG, -1)).sort((a, b) => b.len - a.len);
+const INC = compile(INCENTIVE, 0);
+THEMES.forEach(t => { t.m = compile(t.kw, 0); });
+
+function isNegated(lower, i) {
+  const before = lower.slice(Math.max(0, i - 18), i).split(/[.!?;,\n]/).pop();
+  const words = before.split(/[^\p{L}\p{N}']+/u).filter(Boolean).slice(-2);
+  return words.some(w => NEGATORS.has(w));
+}
+function findHits(lower, norm, matchers, negate) {
+  const cov = new Uint8Array(lower.length + 1), out = [];
+  for (const m of matchers) {
+    const src = m.acc ? lower : norm; m.re.lastIndex = 0; let x;
+    while ((x = m.re.exec(src))) {
+      const i = x.index, L = x[0].length; let free = true;
+      for (let k = i; k < i + L; k++) if (cov[k]) { free = false; break; }
+      if (free) {
+        for (let k = i; k < i + L; k++) cov[k] = 1;
+        let pol = m.pol; if (negate && pol && isNegated(lower, i)) pol = -pol;
+        out.push({ i, len: L, pol });
+      }
+    }
+  }
+  return out.sort((a, b) => a.i - b.i);
+}
+function clauseStarts(lower) {
+  const starts = [0]; const re = /[.!?;]+|(?<![\p{L}])(?:nhưng|nhung|but|tuy nhiên|however|though)(?![\p{L}])/gu; let x;
+  while ((x = re.exec(lower))) starts.push(x.index + x[0].length);
+  return starts;
+}
+const clauseOf = (starts, i) => { let c = 0; for (let k = 0; k < starts.length; k++) if (starts[k] <= i) c = k; return c; };
+
+function parseReviews(raw) {
+  const t = (raw || '').replace(/\r/g, '').trim(); if (!t) return [];
+  const blocks = /\n[ \t]*\n/.test(t) ? t.split(/\n[ \t]*\n+/) : t.split('\n');
+  return blocks.map(b => b.replace(/\s+/g, ' ').trim()).filter(b => b.length > 1).map(b => {
+    let rating = null, text = b, m;
+    if ((m = b.match(/^(★{1,5})(☆*)\s*[:|\-–.]?\s*/))) { rating = m[1].length; text = b.slice(m[0].length); }
+    else if ((m = b.match(/^([1-5])\s*(?:★|⭐️?|\*|\/\s*5|sao|stars?)\s*[:|\-–.]?\s*/i))) { rating = +m[1]; text = b.slice(m[0].length); }
+    else if ((m = b.match(/^([1-5])\s*[|:\-–]\s+/))) { rating = +m[1]; text = b.slice(m[0].length); }
+    return { rating, text: (text.trim() || b).normalize('NFC') };
+  });
+}
+
+function analyseReview(r, idx) {
+  const lower = r.text.normalize('NFC').replace(/[\u2019\u2018]/g, "'").toLowerCase();
+  const norm = strip(lower);
+  const hits = findHits(lower, norm, SENT, true);
+  const P = hits.filter(h => h.pol > 0).length, N = hits.filter(h => h.pol < 0).length;
+  const label = P && N ? 'mixed' : P ? 'positive' : N ? 'negative' : 'unclear';
+  const starts = clauseStarts(lower);
+  const themes = {};
+  for (const th of THEMES) {
+    const th_hits = findHits(lower, norm, th.m, false); if (!th_hits.length) continue;
+    const clauses = new Set(th_hits.map(h => clauseOf(starts, h.i)));
+    let s = 0; for (const h of hits) if (clauses.has(clauseOf(starts, h.i))) s += h.pol;
+    if (!s) s = label === 'positive' ? 1 : label === 'negative' ? -1 : 0;
+    const negClauseText = [...clauses].map(c => lower.slice(starts[c], starts[c + 1] ?? lower.length));
+    themes[th.id] = { pol: Math.sign(s), text: negClauseText.join(' ') };
+  }
+  const tokens = norm.split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+  const incentive = findHits(lower, norm, INC, false).length > 0;
+  return { idx, id: r.id || null, rating: r.rating, text: r.text, lower, norm, hits, P, N, label, themes, tokens, incentive, flags: new Set() };
+}
+
+function jaccard(a, b) { let inter = 0; for (const x of a) if (b.has(x)) inter++; return inter / (a.size + b.size - inter); }
+
+function analyse(input) {
+  const reviews = input.map(analyseReview);
+  const n = reviews.length;
+  const counts = { positive: 0, mixed: 0, negative: 0, unclear: 0 };
+  reviews.forEach(r => counts[r.label]++);
+
+  const themeStats = {};
+  for (const th of THEMES) themeStats[th.id] = { id: th.id, pos: [], neg: [] };
+  reviews.forEach(r => { for (const [id, v] of Object.entries(r.themes)) { if (v.pol > 0) themeStats[id].pos.push(r.idx); if (v.pol < 0) themeStats[id].neg.push(r.idx); } });
+  const praised = Object.values(themeStats).filter(t => t.pos.length >= 2).sort((a, b) => b.pos.length - a.pos.length);
+  const complaints = Object.values(themeStats).filter(t => t.neg.length >= 2).sort((a, b) => b.neg.length - a.neg.length);
+
+  const flags = [];
+  // 1. Near-identical wording
+  const sets = reviews.map(r => r.tokens.length >= 5 ? new Set(r.tokens) : null);
+  const parent = reviews.map((_, i) => i); const find = i => parent[i] === i ? i : (parent[i] = find(parent[i]));
+  for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) if (sets[i] && sets[j] && jaccard(sets[i], sets[j]) >= 0.7) parent[find(j)] = find(i);
+  const groups = {}; reviews.forEach((r, i) => { if (!sets[i]) return; const p = find(i); (groups[p] = groups[p] || []).push(i); });
+  const clusters = Object.values(groups).filter(g => g.length > 1);
+  if (clusters.length) {
+    const dupCount = clusters.reduce((s, g) => s + g.length, 0);
+    clusters.flat().forEach(i => reviews[i].flags.add('dup'));
+    flags.push({ id: 'dup', level: (dupCount >= 3 || dupCount / n >= 0.2) ? 'high' : 'low', vars: { k: dupCount, c: clusters.length }, evidence: clusters.map(g => g[0]).concat(clusters.flatMap(g => g.slice(1))) });
+  }
+  // 2. Short generic praise
+  const generic = reviews.filter(r => r.tokens.length <= 4 && r.label === 'positive');
+  if (generic.length >= 3 && generic.length / n >= 0.25) {
+    generic.forEach(r => r.flags.add('generic'));
+    flags.push({ id: 'generic', level: generic.length / n >= 0.4 ? 'high' : 'low', vars: { k: generic.length, p: Math.round(generic.length / n * 100) }, evidence: generic.map(r => r.idx) });
+  }
+  // 3. Rating and text disagree
+  const mismatch = reviews.filter(r => r.rating != null && ((r.rating >= 4 && r.label === 'negative') || (r.rating <= 2 && r.label === 'positive')));
+  if (mismatch.length) {
+    mismatch.forEach(r => r.flags.add('mismatch'));
+    flags.push({ id: 'mismatch', level: mismatch.length >= 2 ? 'high' : 'low', vars: { k: mismatch.length }, evidence: mismatch.map(r => r.idx) });
+  }
+  // 4. Incentives for reviews
+  const inc = reviews.filter(r => r.incentive);
+  if (inc.length) {
+    inc.forEach(r => r.flags.add('incentive'));
+    flags.push({ id: 'incentive', level: 'high', vars: { k: inc.length }, evidence: inc.map(r => r.idx) });
+  }
+  // 5. Product differs from listing
+  const listing = reviews.filter(r => (r.themes.listing && r.themes.listing.pol < 0) || (r.label !== 'positive' && r.N > 0 && LISTING_RE.test(r.norm) && r.hits.some(h => h.pol < 0)));
+  if (listing.length >= 2) {
+    listing.forEach(r => r.flags.add('listing'));
+    flags.push({ id: 'listing', level: listing.length >= 3 ? 'high' : 'low', vars: { k: listing.length }, evidence: listing.map(r => r.idx) });
+  }
+  // 6. Authenticity concerns
+  const auth = reviews.filter(r => AUTH_NEG_RE.test(r.norm));
+  if (auth.length) {
+    auth.forEach(r => r.flags.add('auth'));
+    flags.push({ id: 'auth', level: 'high', vars: { k: auth.length }, evidence: auth.map(r => r.idx) });
+  }
+  // 7. Small sample
+  if (n < 8) flags.push({ id: 'small', level: 'low', vars: { k: n }, evidence: [] });
+
+  const rated = reviews.filter(r => r.rating != null);
+  const dist = [5, 4, 3, 2, 1].map(s => ({ s, c: rated.filter(r => r.rating === s).length }));
+  const avg = rated.length ? rated.reduce((s, r) => s + r.rating, 0) / rated.length : null;
+  const vi = reviews.filter(r => r.lower !== r.norm).length;
+  const words = n ? Math.round(reviews.reduce((s, r) => s + r.tokens.length, 0) / n) : 0;
+  const service = themeStats.service;
+  const noReply = reviews.filter(r => /chua phan hoi|chua tra loi|chua thay tra loi|khong tra loi|khong phan hoi|no response|never replied|didn't reply|did not reply|no reply|ignored/.test(r.norm));
+
+  return { n, reviews, counts, themeStats, praised, complaints, flags, rated: rated.length, dist, avg, vi, en: n - vi, words, service, noReply: noReply.map(r => r.idx) };
+}
+</script>
+
+<script>
+/* ---------- Strings ---------- */
+const VI = {
+  'nav.home': 'Trang chủ', 'nav.research': 'Nghiên cứu', 'nav.how': 'Cách hoạt động', 'nav.features': 'Tính năng', 'nav.demo': 'Demo', 'nav.faq': 'Hỏi đáp', 'nav.start': 'Bắt đầu',
+  'hero.title': 'Nhìn <span class="grad">kỹ hơn.</span><br>Mua <span class="grad">thông minh hơn.</span>',
+  'hero.sub': 'Công cụ hỗ trợ ra quyết định ứng dụng AI, giúp Gen Z Việt Nam đánh giá review sản phẩm và thông tin uy tín người bán hiện có trước khi mua trên TikTok Shop.',
+  'hero.urlLabel': 'Link sản phẩm TikTok Shop', 'hero.urlPh': 'Dán link sản phẩm TikTok Shop', 'hero.analyse': 'Phân tích review',
+  'hero.manualToggle': 'Hoặc dán nội dung review', 'hero.note': 'Bản thử nghiệm này chưa kết nối lấy dữ liệu từ link.',
+  'hero.manualLabel': 'Nội dung review, mỗi dòng một review', 'hero.manualPh': '5★ Âm thanh hay, pin trâu, giao hàng nhanh\n2★ Pin ngắn hơn nhiều so với mô tả', 'hero.analyseText': 'Phân tích review đã dán',
+  'hero.f1': 'Tổng hợp review', 'hero.f2': 'Phân tích cảm xúc', 'hero.f3': 'Dấu hiệu cần lưu ý',
+  'mock.tag': 'Dữ liệu minh hoạ', 'mock.name': 'Tai nghe không dây', 'mock.demo': 'Sản phẩm demo', 'mock.reviews': 'Đã phân tích 12 review demo', 'mock.snapshot': 'Tóm tắt review',
+  'mock.praised': 'Hay được khen', 'mock.complaint': 'Phàn nàn lặp lại', 'mock.flag': 'Dấu hiệu cần lưu ý: 2 review cho rằng sản phẩm khác với mô tả.',
+  'research.kicker': 'Vì sao có TrustLens', 'research.title': 'Góc nhìn nghiên cứu',
+  'research.lead': 'TrustLens được xây dựng dựa trên cách Gen Z Việt Nam từ 18–24 tuổi quyết định có nên tin review trên TikTok Shop hay không. Phần này dành cho kết quả khảo sát của nhóm.',
+  'research.ph': 'Chỗ trống', 'research.q.title': 'Câu hỏi nghiên cứu', 'research.q.slot': '[Thêm nguyên văn câu hỏi nghiên cứu của nhóm]',
+  'research.m.title': 'Phương pháp và mẫu', 'research.m.slot': '[Phương pháp khảo sát, số người trả lời, độ tuổi, thời gian thu thập]',
+  'research.i1.title': 'Phát hiện 1', 'research.i2.title': 'Phát hiện 2', 'research.i3.title': 'Phát hiện 3',
+  'research.i.slot': '[Số liệu + nguyên văn câu hỏi khảo sát tương ứng]',
+  'research.i1.hint': 'Gợi ý: người trả lời đọc review trước khi mua thường xuyên đến mức nào.',
+  'research.i2.hint': 'Gợi ý: trải nghiệm nhận sản phẩm khác với review.',
+  'research.i3.hint': 'Gợi ý: những tín hiệu người trả lời dùng để đánh giá người bán.',
+  'research.c.title': 'Biểu đồ kết quả', 'research.c.slot': '[Biểu đồ câu trả lời khảo sát. Chỉ thêm khi có dữ liệu gốc và nguyên văn câu hỏi.]',
+  'research.note': 'Phần này chưa hiển thị số liệu nào cho đến khi có dữ liệu nghiên cứu. Mỗi ô trống ghi rõ cần điền gì.',
+  'how.kicker': 'Quy trình', 'how.title': 'TrustLens hoạt động thế nào', 'how.lead': 'Sáu bước từ link sản phẩm đến một quyết định rõ ràng hơn.',
+  'how.s1.t': 'Gửi link hoặc review', 'how.s1.d': 'Dán link sản phẩm TikTok Shop hoặc nhập nội dung review.',
+  'how.s2.t': 'Lấy dữ liệu hiện có', 'how.s2.d': 'Thu thập dữ liệu sản phẩm và review có thể truy cập.',
+  'how.s3.t': 'Phân tích cảm xúc', 'how.s3.d': 'Phân loại từng review là tích cực, trái chiều hay tiêu cực.',
+  'how.s4.t': 'Tìm chủ đề và dấu hiệu cần lưu ý', 'how.s4.d': 'Nhóm các chủ đề lặp lại và phát hiện dấu hiệu cảnh báo tiềm ẩn.',
+  'how.s5.t': 'Tạo báo cáo', 'how.s5.d': 'Lập báo cáo có cấu trúc kèm trích dẫn review làm bằng chứng.',
+  'how.s6.t': 'Quyết định với nhiều thông tin hơn', 'how.s6.d': 'Dựa vào bằng chứng để đưa ra quyết định mua hàng sáng suốt hơn.',
+  'features.kicker': 'Tính năng chính', 'features.title': 'Xem review thực sự nói gì', 'features.lead': 'Mỗi kết quả đều dẫn về các review liên quan, để bạn tự kiểm tra lập luận.',
+  'f1.t': 'Tóm tắt review bằng AI', 'f1.d': 'Tóm tắt ý kiến tích cực, tiêu cực và chỉ ra những phàn nàn lặp lại.',
+  'f2.t': 'Phân tích cảm xúc', 'f2.d': 'Nhận diện cảm xúc tích cực, trái chiều và tiêu cực từ nội dung review, bằng tiếng Việt hoặc tiếng Anh.',
+  'f3.t': 'Phát hiện dấu hiệu cần lưu ý', 'f3.d': 'Làm nổi bật các mẫu đáng ngờ như câu chữ lặp lại, số sao và nội dung không khớp, hoặc thông tin mâu thuẫn, kèm giải thích cho từng dấu hiệu.',
+  'f3.n': 'Dấu hiệu cần lưu ý chỉ là chỉ báo tiềm ẩn, không phải bằng chứng gian lận.',
+  'f4.t': 'Chỉ báo uy tín người bán', 'f4.d': 'Hiển thị thông tin người bán hiện có và giải thích tín hiệu nào thực sự có dữ liệu chứng minh.',
+  'demo.kicker': 'Demo sản phẩm', 'demo.title': 'Thử với sản phẩm demo', 'demo.lead': 'Chọn một sản phẩm để mở phần phân tích trong bảng điều khiển.',
+  'demo.disclaimer': 'Sản phẩm, review, số sao và thông tin người bán trong demo là dữ liệu minh hoạ viết cho bản thử nghiệm này. Chúng không đến từ khách hàng hay người bán thật trên TikTok Shop.',
+  'faq.kicker': 'Hỏi đáp', 'faq.title': 'Câu hỏi về TrustLens', 'faq.lead': 'Bản thử nghiệm làm được gì hôm nay, và giới hạn ở đâu.',
+  'faq.q1': 'TrustLens hoạt động như thế nào?',
+  'faq.a1': 'Bạn dán review của sản phẩm hoặc mở một sản phẩm demo. TrustLens phân loại cảm xúc từng review, nhóm các chủ đề lặp lại, chạy các bước kiểm tra dấu hiệu cần lưu ý và tạo báo cáo dẫn mỗi nhận định về review liên quan. Ở bản thử nghiệm này, phân tích dựa trên quy tắc: danh sách từ khoá tiếng Việt, tiếng Anh và các phép kiểm tra mẫu chạy ngay trên trình duyệt, thay cho mô hình AI dự kiến ở phiên bản sau.',
+  'faq.q2': 'TrustLens có phân tích được mọi sản phẩm trên TikTok Shop không?',
+  'faq.a2': 'Chưa tự động được. Bản thử nghiệm chưa lấy được review từ link sản phẩm, nên bạn cần sao chép review từ trang sản phẩm rồi dán vào. Công cụ đọc được tiếng Việt và tiếng Anh, nhận ra phần lớn từ khoá tiếng Việt dù có hay không có dấu, và cho kết quả ổn định hơn khi có từ 10 review trở lên. Tiếng lóng, câu mỉa mai, review chỉ có emoji và ngôn ngữ khác có thể bị hiểu sai.',
+  'faq.q3': 'TrustLens nhận diện review có thể đáng ngờ bằng cách nào?',
+  'faq.a3': 'Công cụ tìm các review có câu chữ gần như giống hệt nhau, tỷ lệ cao các lời khen ngắn chung chung, số sao trái ngược với nội dung, việc nhắc đến voucher hay quà tặng để đổi lấy review, nhiều review nói sản phẩm khác mô tả, và các nhận xét cho rằng hàng giả. Mỗi dấu hiệu đều liệt kê các review đã kích hoạt nó.',
+  'faq.q4': 'Dấu hiệu cần lưu ý có chứng minh review là giả không?',
+  'faq.a4': 'Không. Đây chỉ là chỉ báo tiềm ẩn, không phải bằng chứng. Người mua thật cũng hay dùng những câu ngắn giống nhau, và mô tả sản phẩm vẫn có thể đúng dù vài người không đồng ý. Hãy xem dấu hiệu như lý do để đọc kỹ hơn, xem ảnh và video của người mua, và so sánh với người bán khác.',
+  'faq.q5': 'Nếu không lấy được dữ liệu review thì sao?',
+  'faq.a5': 'TrustLens sẽ báo rằng chưa lấy được dữ liệu và đề nghị bạn dán review vào. Công cụ không bao giờ tự bịa review, số sao hay thông tin người bán để lấp chỗ trống. Ở bản thử nghiệm này, mọi link sản phẩm đều dẫn đến kết quả đó vì tính năng lấy dữ liệu từ link chưa được kết nối.',
+  'faq.q6': 'TrustLens xử lý dữ liệu người dùng thế nào?',
+  'faq.a6': 'Review và thông tin bạn nhập được phân tích ngay trên trình duyệt và không gửi lên máy chủ. Nếu bạn lưu báo cáo, báo cáo nằm trong bộ nhớ cục bộ của trình duyệt này cho đến khi bạn xoá. TrustLens không hỏi tên, tài khoản hay thông tin đăng nhập TikTok của bạn.',
+  'cta.title': 'Sẵn sàng mua sắm thông minh hơn?', 'cta.sub': 'Biến hàng trăm review rối mắt thành nhận định rõ ràng.', 'cta.btn': 'Dùng thử TrustLens ngay',
+  'dash.back': 'Về trang chủ', 'dash.title': 'Phân tích review',
+  'side.link': 'Link sản phẩm TikTok Shop', 'side.reviews': 'Review', 'side.reviewsHelp': 'Mỗi dòng một review. Bắt đầu dòng bằng số sao như 5★ để tính cả điểm đánh giá.',
+  'side.details': 'Thông tin sản phẩm và người bán (không bắt buộc)', 'side.product': 'Tên sản phẩm', 'side.shop': 'Tên shop', 'side.rating': 'Điểm shop /5', 'side.sold': 'Đã bán', 'side.since': 'Bán từ năm', 'side.response': 'Tỷ lệ phản hồi',
+  'side.detailsHelp': 'Sao chép từ trang shop nếu bạn muốn đưa vào báo cáo. TrustLens không xác minh được các thông tin này.',
+  'side.analyse': 'Phân tích review', 'side.clear': 'Xoá', 'side.demos': 'Sản phẩm demo', 'side.saved': 'Báo cáo đã lưu', 'common.demo': 'Demo',
+  'footer.about.t': 'Về TrustLens', 'footer.about.d': 'Bản thử nghiệm công cụ hỗ trợ ra quyết định, giúp Gen Z Việt Nam đọc review TikTok Shop một cách tỉnh táo hơn. TrustLens không đảm bảo sản phẩm hay người bán là đáng tin cậy.',
+  'footer.explore': 'Khám phá', 'footer.dashboard': 'Bảng phân tích', 'footer.privacy.t': 'Quyền riêng tư',
+  'footer.privacy.d': 'Review bạn dán được phân tích trên trình duyệt và không gửi lên máy chủ. Báo cáo đã lưu nằm trong trình duyệt này cho đến khi bạn xoá.',
+  'footer.limits.t': 'Giới hạn của AI và nguồn dữ liệu',
+  'footer.limits.d1': 'Kết quả đến từ phân tích văn bản tự động và có thể sai. Dấu hiệu cần lưu ý chỉ là chỉ báo tiềm ẩn, không phải bằng chứng review giả hay gian lận.',
+  'footer.limits.d2': 'Sản phẩm, review, số sao và thông tin người bán trong demo là dữ liệu minh hoạ. TrustLens không liên kết với TikTok hay TikTok Shop.',
+  'footer.copy': '© 2026 Bản thử nghiệm TrustLens', 'footer.made': 'Dành cho người mua sắm Gen Z Việt Nam',
+  'theme.performance': 'Âm thanh & hiệu năng', 'theme.price': 'Giá & độ đáng tiền', 'theme.battery': 'Pin & sạc',
+};
+
+const STR = {
+  en: {
+    'theme.quality': 'Product quality', 'theme.delivery': 'Delivery', 'theme.packaging': 'Packaging', 'theme.price': 'Price & value', 'theme.listing': 'Accuracy of the listing',
+    'theme.durability': 'Durability', 'theme.service': 'Seller service', 'theme.authenticity': 'Authenticity', 'theme.battery': 'Battery & charging', 'theme.performance': 'Sound & performance',
+    'theme.skin': 'Skin & lip reaction', 'theme.texture': 'Texture, scent & colour', 'theme.comfort': 'Comfort & size',
+    positive: 'Positive', mixed: 'Mixed', negative: 'Negative', unclear: 'No clear sentiment',
+    demoTag: 'Demo', illus: 'Illustrative data', analyseDemo: 'Analyse demo', demoReviews: '{n} demo reviews',
+    reviews: 'reviews', product: 'Product', untitled: 'Product not named', notLinked: 'No product link',
+    srcDemo: 'Demo dataset, illustrative. Not real TikTok Shop customers.', srcManual: 'Reviews you pasted ({n})',
+    sourceLbl: 'Data source', analysedLbl: 'Analysed', methodLbl: 'Method', method: 'Rule-based text analysis in your browser (prototype v0.1)',
+    save: 'Save report', copy: 'Copy report', saved: 'Report saved in this browser', copied: 'Report copied', copyFail: "Couldn't copy. Select the report text and copy it manually.", saveFail: "This browser blocked saving. Copy the report instead.",
+    summaryT: 'AI summary', summaryBadge: 'Prototype', summaryBasis: 'Written by TrustLens from the {n} reviews above using rule-based analysis, standing in for the planned AI model. Check the excerpts before relying on it.',
+    overviewT: 'Review overview', total: 'Reviews analysed', avgRating: 'Average stars in input', avgWords: 'Average words per review', noRatings: 'No star ratings in the input. Start a line with 5★ to include one.',
+    langMix: '{vi} in Vietnamese, {en} in English or without diacritics', ratingSrc: 'Stars come from the pasted text, not from TikTok Shop.',
+    sentimentT: 'Sentiment breakdown', sentimentSub: 'Share of reviews',
+    themesT: 'Positive and negative themes', praisedT: 'Often praised', criticisedT: 'Often criticised', mentions: '{k} reviews', noThemes: 'No theme came up in two or more reviews.',
+    complaintsT: 'Recurring complaints', noComplaints: 'No complaint appears in more than one review.',
+    flagsT: 'Potential red flags', flagsSub: 'Potential indicators, not proof. Each one lists the reviews that triggered it.', levelHigh: 'Check closely', levelLow: 'Worth noting',
+    noFlags: "The current checks found no potential red flags. That doesn't confirm the reviews are genuine.",
+    otherExpl: 'Other explanations: ', moreEv: '+{k} more in the excerpts below',
+    sellerT: 'Seller credibility indicators', sellerSub: 'What the available data can and can\'t tell you',
+    fromDemo: 'Demo data', fromUser: 'Entered by you, not verified', fromReviews: 'From review text', notAvail: 'Not available',
+    sShop: 'Shop', sRating: 'Shop rating', sSold: 'Items sold', sSince: 'Selling since', sResponse: 'Response rate', sService: 'Service mentions in reviews', sNoReply: 'Reviews saying the seller didn\'t reply', sVerified: 'Verified business information',
+    nRating: 'Covers past orders across the whole shop, so it says little about this specific product.',
+    nSold: 'Shows popularity, not quality. The figure can\'t be verified here.',
+    nSince: 'A longer history gives more to judge by. A new shop isn\'t automatically risky.',
+    nResponse: 'Suggests whether the shop answers messages. Compare it with what reviewers say about replies.',
+    nService: '{p} positive, {n} negative.', nNoReply: 'Read these reviews to see how complaints were handled.',
+    nVerified: 'This prototype can\'t check business registration or official-store status.',
+    nEmpty: 'Add shop details in the sidebar to show them here.',
+    excerptsT: 'Review excerpts', all: 'All', flagged: 'Flagged', keyPos: 'Positive cue', keyNeg: 'Negative cue', noneInFilter: 'No reviews in this filter.',
+    fDup: 'Similar wording', fGeneric: 'Generic praise', fMismatch: 'Stars vs text', fIncentive: 'Incentive', fListing: 'Differs from listing', fAuth: 'Authenticity',
+    dupT: '{k} reviews use near-identical wording', dupD: 'Groups of reviews share almost the same words. Copied or templated reviews can be a sign of review manipulation.', dupO: 'buyers copying a popular review, or the same person reviewing twice.',
+    genericT: '{p}% of reviews are very short generic praise', genericD: 'Many reviews say little beyond "good" or "nice", so they add little evidence about the product.', genericO: 'busy buyers often leave one-word reviews to finish an order.',
+    mismatchT: '{k} reviews have stars that contradict their text', mismatchD: 'A high star rating with a negative comment (or the reverse) can inflate the average rating.', mismatchO: 'mis-taps, or a buyer rating delivery rather than the product.',
+    incentiveT: '{k} reviews mention a reward for reviewing', incentiveD: 'Vouchers, gifts or discounts in exchange for reviews can push ratings up.', incentiveO: 'the reward may not have depended on a positive review.',
+    listingT: '{k} reviews say the product differs from its listing', listingD: 'Several buyers compare the product with the description, photos or video and find it falls short.', listingO: 'different expectations, or a product batch that changed.',
+    authT: '{k} reviews question whether the product is genuine', authD: 'Claims of fake or non-genuine goods are worth checking against the shop\'s official status.', authO: 'the reviewer may be mistaken or reviewing a different listing.',
+    smallT: 'Only {k} reviews to analyse', smallD: 'With so few reviews, patterns can be accidental and percentages swing easily.', smallO: 'a new product may simply have few buyers yet.',
+    sumBase: 'Based on {n} reviews, opinions are {tone}.', toneMostlyPos: 'mostly positive', toneMostlyNeg: 'mostly negative', toneMixed: 'divided', toneUnclear: 'hard to read',
+    sumPraise: 'Reviewers most often praise {a}.', sumComplain: 'Recurring complaints concern {a}.', sumNoComplain: 'No complaint came up more than once.',
+    sumFlags: 'TrustLens found {k} potential red flags to check before you buy.', sumFlag1: 'TrustLens found 1 potential red flag to check before you buy.', sumNoFlags: "The current checks found no potential red flags, which doesn't confirm the reviews are genuine.",
+    and: 'and',
+    noticeNoDataT: "We couldn't retrieve reviews from this link", noticeNoDataD: "Automatic retrieval from TikTok Shop isn't connected in this prototype, so no product or review data was collected. TrustLens won't fill the gap with made-up data. Copy the reviews from the product page and paste them in the sidebar, or try a demo product.",
+    noticeEmptyT: 'Add reviews to start', noticeEmptyD: 'Paste reviews in the sidebar, one per line, or open a demo product to see a full report.',
+    pasteBtn: 'Paste reviews', demoBtn: 'Open a demo product',
+    errUrlEmpty: 'Paste a product link first.', errUrl: "That doesn't look like a TikTok link. Product links usually start with https://www.tiktok.com/ or https://vt.tiktok.com/.", errReviews: 'Paste at least one review first.',
+    savedEmpty: 'Reports you save appear here. They stay in this browser only.', del: 'Delete saved report',
+    linkLbl: 'Link', price: 'Price', priceIllus: 'illustrative',
+    reportHead: 'TrustLens report', reportWarn: 'Red flags are potential indicators, not proof. Results come from automated analysis and can be wrong.',
+  },
+  vi: {
+    'theme.quality': 'Chất lượng sản phẩm', 'theme.delivery': 'Giao hàng', 'theme.packaging': 'Đóng gói', 'theme.price': 'Giá & độ đáng tiền', 'theme.listing': 'Độ đúng mô tả',
+    'theme.durability': 'Độ bền', 'theme.service': 'Dịch vụ của shop', 'theme.authenticity': 'Hàng thật/giả', 'theme.battery': 'Pin & sạc', 'theme.performance': 'Âm thanh & hiệu năng',
+    'theme.skin': 'Phản ứng trên da & môi', 'theme.texture': 'Kết cấu, mùi & màu', 'theme.comfort': 'Độ thoải mái & kích thước',
+    positive: 'Tích cực', mixed: 'Trái chiều', negative: 'Tiêu cực', unclear: 'Chưa rõ cảm xúc',
+    demoTag: 'Demo', illus: 'Dữ liệu minh hoạ', analyseDemo: 'Phân tích demo', demoReviews: '{n} review demo',
+    reviews: 'review', product: 'Sản phẩm', untitled: 'Chưa đặt tên sản phẩm', notLinked: 'Không có link sản phẩm',
+    srcDemo: 'Bộ dữ liệu demo, mang tính minh hoạ. Không phải khách hàng thật trên TikTok Shop.', srcManual: 'Review bạn đã dán ({n})',
+    sourceLbl: 'Nguồn dữ liệu', analysedLbl: 'Thời điểm phân tích', methodLbl: 'Phương pháp', method: 'Phân tích văn bản dựa trên quy tắc, chạy trên trình duyệt (bản thử nghiệm v0.1)',
+    save: 'Lưu báo cáo', copy: 'Sao chép báo cáo', saved: 'Đã lưu báo cáo trong trình duyệt này', copied: 'Đã sao chép báo cáo', copyFail: 'Không sao chép được. Hãy bôi đen nội dung báo cáo và sao chép thủ công.', saveFail: 'Trình duyệt này chặn việc lưu. Hãy sao chép báo cáo thay thế.',
+    summaryT: 'Tóm tắt bằng AI', summaryBadge: 'Bản thử nghiệm', summaryBasis: 'TrustLens viết phần này từ {n} review bên dưới bằng phân tích dựa trên quy tắc, thay cho mô hình AI dự kiến. Hãy đọc các trích dẫn trước khi dựa vào.',
+    overviewT: 'Tổng quan review', total: 'Số review đã phân tích', avgRating: 'Số sao trung bình trong dữ liệu nhập', avgWords: 'Số từ trung bình mỗi review', noRatings: 'Dữ liệu nhập không có số sao. Bắt đầu dòng bằng 5★ để thêm.',
+    langMix: '{vi} bằng tiếng Việt, {en} bằng tiếng Anh hoặc không dấu', ratingSrc: 'Số sao lấy từ nội dung bạn dán, không phải từ TikTok Shop.',
+    sentimentT: 'Phân bố cảm xúc', sentimentSub: 'Tỷ lệ review',
+    themesT: 'Chủ đề tích cực và tiêu cực', praisedT: 'Hay được khen', criticisedT: 'Hay bị chê', mentions: '{k} review', noThemes: 'Chưa có chủ đề nào xuất hiện từ hai review trở lên.',
+    complaintsT: 'Phàn nàn lặp lại', noComplaints: 'Không có phàn nàn nào xuất hiện ở nhiều hơn một review.',
+    flagsT: 'Dấu hiệu cần lưu ý', flagsSub: 'Chỉ báo tiềm ẩn, không phải bằng chứng. Mỗi dấu hiệu đều liệt kê các review liên quan.', levelHigh: 'Nên kiểm tra kỹ', levelLow: 'Đáng chú ý',
+    noFlags: 'Các bước kiểm tra hiện tại không thấy dấu hiệu cần lưu ý nào. Điều đó không khẳng định review là thật.',
+    otherExpl: 'Cách giải thích khác: ', moreEv: '+{k} review nữa trong phần trích dẫn bên dưới',
+    sellerT: 'Chỉ báo uy tín người bán', sellerSub: 'Dữ liệu hiện có nói được gì và không nói được gì',
+    fromDemo: 'Dữ liệu demo', fromUser: 'Bạn nhập, chưa xác minh', fromReviews: 'Từ nội dung review', notAvail: 'Không có',
+    sShop: 'Shop', sRating: 'Điểm đánh giá shop', sSold: 'Đã bán', sSince: 'Bán từ năm', sResponse: 'Tỷ lệ phản hồi', sService: 'Nhắc đến dịch vụ trong review', sNoReply: 'Review nói shop không phản hồi', sVerified: 'Thông tin doanh nghiệp đã xác minh',
+    nRating: 'Tính trên đơn hàng cũ của cả shop, nên ít nói lên chất lượng riêng của sản phẩm này.',
+    nSold: 'Cho thấy độ phổ biến, không phải chất lượng. Con số này chưa được xác minh ở đây.',
+    nSince: 'Bán lâu thì có nhiều lịch sử để đánh giá hơn. Shop mới không có nghĩa là rủi ro.',
+    nResponse: 'Cho biết shop có trả lời tin nhắn hay không. Hãy so với những gì người mua kể về việc phản hồi.',
+    nService: '{p} tích cực, {n} tiêu cực.', nNoReply: 'Đọc các review này để xem shop xử lý khiếu nại thế nào.',
+    nVerified: 'Bản thử nghiệm chưa kiểm tra được đăng ký kinh doanh hay trạng thái cửa hàng chính hãng.',
+    nEmpty: 'Thêm thông tin shop ở thanh bên để hiển thị tại đây.',
+    excerptsT: 'Trích dẫn review', all: 'Tất cả', flagged: 'Có dấu hiệu', keyPos: 'Từ tích cực', keyNeg: 'Từ tiêu cực', noneInFilter: 'Không có review nào trong bộ lọc này.',
+    fDup: 'Câu chữ giống nhau', fGeneric: 'Khen chung chung', fMismatch: 'Sao lệch nội dung', fIncentive: 'Có ưu đãi', fListing: 'Khác mô tả', fAuth: 'Nghi hàng giả',
+    dupT: '{k} review có câu chữ gần như giống hệt nhau', dupD: 'Các nhóm review dùng gần như cùng một câu. Review sao chép hoặc theo mẫu có thể là dấu hiệu thao túng đánh giá.', dupO: 'người mua chép lại một review phổ biến, hoặc một người đánh giá hai lần.',
+    genericT: '{p}% review là lời khen rất ngắn, chung chung', genericD: 'Nhiều review chỉ ghi "tốt" hay "đẹp", nên gần như không cho thêm bằng chứng về sản phẩm.', genericO: 'người mua bận thường để lại review một chữ cho xong đơn.',
+    mismatchT: '{k} review có số sao trái với nội dung', mismatchD: 'Sao cao nhưng nội dung chê (hoặc ngược lại) có thể làm điểm trung bình cao hơn thực tế.', mismatchO: 'bấm nhầm, hoặc người mua chấm điểm giao hàng thay vì sản phẩm.',
+    incentiveT: '{k} review nhắc đến quà hoặc ưu đãi khi đánh giá', incentiveD: 'Voucher, quà tặng hay giảm giá để đổi lấy review có thể đẩy điểm đánh giá lên.', incentiveO: 'phần quà có thể không phụ thuộc vào việc khen.',
+    listingT: '{k} review cho rằng sản phẩm khác mô tả', listingD: 'Nhiều người mua so sánh với mô tả, hình ảnh hoặc video và thấy sản phẩm không như vậy.', listingO: 'kỳ vọng khác nhau, hoặc lô hàng đã thay đổi.',
+    authT: '{k} review nghi ngờ hàng không chính hãng', authD: 'Nên đối chiếu các nhận xét hàng giả với trạng thái chính hãng của shop.', authO: 'người viết có thể nhầm, hoặc đang nói về một sản phẩm khác.',
+    smallT: 'Chỉ có {k} review để phân tích', smallD: 'Với quá ít review, các mẫu có thể là ngẫu nhiên và tỷ lệ dễ dao động.', smallO: 'sản phẩm mới có thể chưa có nhiều người mua.',
+    sumBase: 'Dựa trên {n} review, ý kiến {tone}.', toneMostlyPos: 'phần lớn là tích cực', toneMostlyNeg: 'phần lớn là tiêu cực', toneMixed: 'khá chia rẽ', toneUnclear: 'khó xác định',
+    sumPraise: 'Người mua hay khen nhất về {a}.', sumComplain: 'Phàn nàn lặp lại liên quan đến {a}.', sumNoComplain: 'Không có phàn nàn nào lặp lại quá một lần.',
+    sumFlags: 'TrustLens tìm thấy {k} dấu hiệu cần lưu ý nên kiểm tra trước khi mua.', sumFlag1: 'TrustLens tìm thấy 1 dấu hiệu cần lưu ý nên kiểm tra trước khi mua.', sumNoFlags: 'Các bước kiểm tra hiện tại không thấy dấu hiệu cần lưu ý, nhưng điều đó không khẳng định review là thật.',
+    and: 'và',
+    noticeNoDataT: 'Chưa lấy được review từ link này', noticeNoDataD: 'Bản thử nghiệm chưa kết nối tính năng tự động lấy dữ liệu từ TikTok Shop, nên chưa thu thập được dữ liệu sản phẩm hay review nào. TrustLens sẽ không tự bịa dữ liệu. Hãy sao chép review từ trang sản phẩm và dán vào thanh bên, hoặc thử một sản phẩm demo.',
+    noticeEmptyT: 'Thêm review để bắt đầu', noticeEmptyD: 'Dán review vào thanh bên, mỗi dòng một review, hoặc mở một sản phẩm demo để xem báo cáo đầy đủ.',
+    pasteBtn: 'Dán review', demoBtn: 'Mở sản phẩm demo',
+    errUrlEmpty: 'Hãy dán link sản phẩm trước.', errUrl: 'Đây có vẻ không phải link TikTok. Link sản phẩm thường bắt đầu bằng https://www.tiktok.com/ hoặc https://vt.tiktok.com/.', errReviews: 'Hãy dán ít nhất một review.',
+    savedEmpty: 'Báo cáo bạn lưu sẽ hiện ở đây. Chúng chỉ nằm trong trình duyệt này.', del: 'Xoá báo cáo đã lưu',
+    linkLbl: 'Link', price: 'Giá', priceIllus: 'minh hoạ',
+    reportHead: 'Báo cáo TrustLens', reportWarn: 'Dấu hiệu cần lưu ý chỉ là chỉ báo tiềm ẩn, không phải bằng chứng. Kết quả đến từ phân tích tự động và có thể sai.',
+  },
+};
+
+/* ---------- Product illustrations ---------- */
+const SVG = {
+  headphones: '<svg viewBox="0 0 160 160" aria-hidden="true"><path d="M36 96V80a44 44 0 0 1 88 0v16" fill="none" stroke="#171717" stroke-width="9" stroke-linecap="round"/><rect x="24" y="84" width="32" height="50" rx="15" fill="#F52D46"/><rect x="104" y="84" width="32" height="50" rx="15" fill="#F52D46"/><rect x="33" y="93" width="9" height="32" rx="4.5" fill="#FFB8C3"/><rect x="118" y="93" width="9" height="32" rx="4.5" fill="#FFB8C3"/></svg>',
+  lipcare: '<svg viewBox="0 0 160 160" aria-hidden="true"><rect x="58" y="62" width="44" height="78" rx="10" fill="#F52D46"/><rect x="58" y="96" width="44" height="18" fill="#FFB8C3"/><rect x="62" y="20" width="36" height="46" rx="10" fill="#171717"/><rect x="66" y="58" width="28" height="8" rx="3" fill="#FFFFFF" opacity=".5"/></svg>',
+  serum: '<svg viewBox="0 0 160 160" aria-hidden="true"><ellipse cx="80" cy="36" rx="14" ry="16" fill="#F52D46"/><rect x="66" y="48" width="28" height="22" rx="4" fill="#171717"/><rect x="48" y="68" width="64" height="72" rx="18" fill="#FFC9D2"/><rect x="60" y="92" width="40" height="26" rx="5" fill="#FFFFFF"/><rect x="66" y="100" width="28" height="4" rx="2" fill="#F52D46"/><rect x="66" y="108" width="18" height="4" rx="2" fill="#171717" opacity=".35"/></svg>',
+  fan: '<svg viewBox="0 0 160 160" aria-hidden="true"><rect x="71" y="100" width="18" height="48" rx="9" fill="#171717"/><circle cx="80" cy="66" r="46" fill="#FFFFFF" stroke="#F52D46" stroke-width="7"/><g fill="#F52D46"><ellipse cx="80" cy="44" rx="11" ry="20"/><ellipse cx="80" cy="44" rx="11" ry="20" transform="rotate(120 80 66)"/><ellipse cx="80" cy="44" rx="11" ry="20" transform="rotate(240 80 66)"/></g><circle cx="80" cy="66" r="8" fill="#171717"/></svg>',
+  generic: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 16l4-8h20l4 8v24H10z" fill="#FFFFFF" stroke="#D0102D" stroke-width="2.5" stroke-linejoin="round"/><path d="M18 20a6 6 0 0 0 12 0" fill="none" stroke="#D0102D" stroke-width="2.5" stroke-linecap="round"/></svg>',
+};
+const ICON = {
+  flag: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4h11l-1.5 4L16 12H5"/></svg>',
+  check: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none;margin-top:2px"><path d="M4 12l5 5L20 6"/></svg>',
+  link: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/><path d="M3 3l18 18"/></svg>',
+  paste: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6M9 18h3"/></svg>',
+  save: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>',
+  copy: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h4"/></svg>',
+};
+
+/* ---------- Helpers ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
+};
+let lang = store.get('trustlens.lang', 'en') === 'vi' ? 'vi' : 'en';
+const EN_DOM = {}, EN_PH = {}, EN_ALT = {};
+function t(key, vars) {
+  let s = STR[lang][key] ?? STR.en[key] ?? key;
+  if (vars) for (const [k, v] of Object.entries(vars)) s = s.split('{' + k + '}').join(v);
+  return s;
+}
+const themeName = id => t('theme.' + id);
+const joinList = arr => arr.length <= 1 ? (arr[0] || '') : arr.slice(0, -1).join(', ') + ' ' + t('and') + ' ' + arr[arr.length - 1];
+const stars = r => '★'.repeat(r) + '☆'.repeat(5 - r);
+const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toast.h); toast.h = setTimeout(() => el.classList.remove('show'), 2600); }
+
+/* ---------- Language ---------- */
+function applyLang() {
+  document.documentElement.lang = lang;
+  $$('[data-i18n]').forEach(el => { const k = el.dataset.i18n; if (!(k in EN_DOM)) EN_DOM[k] = el.innerHTML; el.innerHTML = lang === 'vi' ? (VI[k] ?? EN_DOM[k]) : EN_DOM[k]; });
+  $$('[data-i18n-alt]').forEach(el => { const k = el.dataset.i18nAlt; if (!(k in EN_ALT)) EN_ALT[k] = el.getAttribute('alt'); el.setAttribute('alt', lang === 'vi' ? (VI[k] ?? EN_ALT[k]) : EN_ALT[k]); });
+  $$('[data-i18n-ph]').forEach(el => { const k = el.dataset.i18nPh; if (!(k in EN_PH)) EN_PH[k] = el.getAttribute('placeholder'); el.setAttribute('placeholder', lang === 'vi' ? (VI[k] ?? EN_PH[k]) : EN_PH[k]); });
+  $$('.lang button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+  renderDemoCards(); renderSideDemos(); renderSaved(); renderMock();
+  if (!$('#dashboard').hidden) renderMain();
+}
+
+/* ---------- Views ---------- */
+function showView(target) {
+  const dash = target === 'dashboard';
+  $('#landing').hidden = dash; $('#dashboard').hidden = !dash;
+  $('#nav').classList.remove('open'); $('#menu-btn').setAttribute('aria-expanded', 'false');
+  if (dash) { renderMain(); window.scrollTo({ top: 0 }); return; }
+  const el = document.getElementById(target);
+  if (el && target !== 'home') requestAnimationFrame(() => el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }));
+  else window.scrollTo({ top: 0 });
+}
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-go]'); if (!a) return;
+  e.preventDefault(); showView(a.dataset.go);
+  try { history.replaceState(null, '', '#' + a.dataset.go); } catch (err) {}
+});
+
+/* ---------- Landing: mock + demo cards ---------- */
+function renderMock() {
+  if (!document.getElementById('mock-bar')) return;
+  const a = analyse(parseReviews(demoText(DEMOS[0])));
+  const segs = ['positive', 'mixed', 'negative', 'unclear'], cls = { positive: 'p', mixed: 'm', negative: 'n', unclear: 'u' };
+  $('#mock-bar').innerHTML = segs.filter(s => a.counts[s]).map(s => `<span class="${cls[s]}" style="width:${pct(a.counts[s], a.n)}%"></span>`).join('');
+  const colors = { positive: 'var(--pos)', mixed: '#E29A2D', negative: 'var(--neg)', unclear: '#CFC6C9' };
+  $('#mock-legend').innerHTML = segs.filter(s => a.counts[s]).map(s => `<span><i class="dot" style="background:${colors[s]}"></i>${t(s)} <b>${a.counts[s]}</b></span>`).join('');
+}
+function renderDemoCards() {
+  $('#demo-row').innerHTML = DEMOS.map(d => `
+    <article class="demo-card">
+      <div class="demo-img">${SVG[d.id]}<span class="pill pill-demo">${t('demoTag')}</span></div>
+      <h3>${esc(d.name[lang])}</h3>
+      <div class="meta"><span>${esc(d.cat[lang])}</span><span>${t('demoReviews', { n: d.reviews.length })}</span></div>
+      <button class="btn btn-ghost btn-sm" type="button" data-demo="${d.id}">${t('analyseDemo')}</button>
+    </article>`).join('');
+}
+function renderSideDemos() {
+  $('#side-demos').innerHTML = DEMOS.map(d => `
+    <button type="button" data-demo="${d.id}" aria-current="${state.source.type === 'demo' && state.source.id === d.id}">
+      <span class="mini">${SVG[d.id]}</span><span>${esc(d.name[lang])}</span><span class="pill pill-soft">${d.reviews.length}</span>
+    </button>`).join('');
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-demo]'); if (!b) return;
+  loadDemo(b.dataset.demo); showView('dashboard');
+});
+
+/* ---------- Dashboard state ---------- */
+const state = { source: { type: 'demo', id: 'headphones' }, result: null, at: null, url: '', details: {}, notice: null, filter: 'all', detailsFromDemo: true };
+const demoText = d => d.reviews.map(([r, x]) => `${r}★ ${x}`).join('\n');
+const DETAIL_IDS = { product: 'd-product', shop: 'd-shop', rating: 'd-rating', sold: 'd-sold', since: 'd-since', response: 'd-response' };
+function setDetails(v) { for (const [k, id] of Object.entries(DETAIL_IDS)) $('#' + id).value = v[k] || ''; }
+function readDetails() { const o = {}; for (const [k, id] of Object.entries(DETAIL_IDS)) o[k] = $('#' + id).value.trim(); return o; }
+function clearErrors() { ['#dash-url-error', '#hero-url-error', '#hero-reviews-error'].forEach(s => { $(s).hidden = true; }); }
+
+function loadDemo(id) {
+  const d = DEMOS.find(x => x.id === id) || DEMOS[0];
+  $('#dash-url').value = ''; $('#dash-reviews').value = demoText(d);
+  setDetails(Object.assign({ product: d.name[lang] }, d.seller));
+  state.source = { type: 'demo', id: d.id }; state.detailsFromDemo = true; state.filter = 'all';
+  run();
+}
+const isTikTok = u => { try { const x = new URL(u); return /^https?:$/.test(x.protocol) && /(^|\.)tiktok\.com$/i.test(x.hostname); } catch (e) { return false; } };
+
+function run() {
+  clearErrors();
+  const url = $('#dash-url').value.trim();
+  if (url && !isTikTok(url)) { const e = $('#dash-url-error'); e.textContent = t('errUrl'); e.hidden = false; return false; }
+  const reviews = parseReviews($('#dash-reviews').value);
+  state.url = url; state.details = readDetails();
+  if (!reviews.length) { state.result = null; state.notice = url ? 'noData' : 'empty'; }
+  else { state.result = analyse(reviews); state.notice = null; state.at = new Date(); }
+  renderSideDemos();
+  if (!$('#dashboard').hidden) renderMain();
+  return true;
+}
+
+$('#dash-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const url = $('#dash-url').value.trim();
+  if (url && !$('#dash-reviews').value.trim() && window.TL_live) { if (isTikTok(url)) TL_live.start(url); else { const er = $('#dash-url-error'); er.textContent = t('errUrl'); er.hidden = false; } return; }
+  run();
+});
+$('#dash-reviews').addEventListener('input', () => { state.source = { type: 'manual' }; });
+Object.values(DETAIL_IDS).forEach(id => $('#' + id).addEventListener('input', () => { state.detailsFromDemo = false; }));
+$('#dash-clear').addEventListener('click', () => {
+  $('#dash-url').value = ''; $('#dash-reviews').value = ''; setDetails({});
+  state.source = { type: 'manual' }; state.result = null; state.notice = 'empty'; state.detailsFromDemo = false;
+  renderSideDemos(); renderMain(); $('#dash-reviews').focus();
+});
+
+/* ---------- Hero forms ---------- */
+$('#hero-url-form').addEventListener('submit', e => {
+  e.preventDefault(); clearErrors();
+  const url = $('#hero-url').value.trim(), err = $('#hero-url-error');
+  if (!url) { err.textContent = t('errUrlEmpty'); err.hidden = false; return; }
+  if (!isTikTok(url)) { err.textContent = t('errUrl'); err.hidden = false; return; }
+  $('#dash-url').value = url; $('#dash-reviews').value = ''; setDetails({});
+  state.source = { type: 'manual' }; state.detailsFromDemo = false;
+  if (window.TL_live) { showView('dashboard'); TL_live.start(url); return; }
+  run(); showView('dashboard');
+});
+$('#hero-manual-toggle').addEventListener('click', e => {
+  const box = $('#hero-manual'); box.hidden = !box.hidden; e.currentTarget.setAttribute('aria-expanded', String(!box.hidden));
+  if (!box.hidden) $('#hero-reviews').focus();
+});
+$('#hero-manual').addEventListener('submit', e => {
+  e.preventDefault(); clearErrors();
+  const text = $('#hero-reviews').value;
+  if (!parseReviews(text).length) { const err = $('#hero-reviews-error'); err.textContent = t('errReviews'); err.hidden = false; return; }
+  $('#dash-url').value = ''; $('#dash-reviews').value = text; setDetails({});
+  state.source = { type: 'manual' }; state.detailsFromDemo = false; state.filter = 'all';
+  run(); showView('dashboard');
+});
+
+/* ---------- Dashboard rendering ---------- */
+function highlight(r) {
+  let out = '', pos = 0;
+  for (const h of r.hits) {
+    if (h.i < pos) continue;
+    out += esc(r.text.slice(pos, h.i)) + `<mark class="${h.pol > 0 ? 'hp' : 'hn'}">${esc(r.text.slice(h.i, h.i + h.len))}</mark>`;
+    pos = h.i + h.len;
+  }
+  return out + esc(r.text.slice(pos));
+}
+const refOf = r => r.id ? 'ID ' + esc(r.id) : '#' + (r.idx + 1);
+const short = (s, n = 140) => s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s;
+const LABEL_CHIP = { positive: 'chip-pos', mixed: 'chip-mix', negative: 'chip-neg', unclear: 'chip-unc' };
+const FLAG_NAMES = { dup: 'fDup', generic: 'fGeneric', mismatch: 'fMismatch', incentive: 'fIncentive', listing: 'fListing', auth: 'fAuth' };
+
+function summaryText(a) {
+  const share = s => a.counts[s] / a.n;
+  const p = share('positive'), ng = share('negative');
+  const tone = p >= 0.6 || (p >= 0.45 && ng < 0.2) ? t('toneMostlyPos') : ng >= 0.5 || (ng >= 0.35 && p < 0.25) ? t('toneMostlyNeg') : share('unclear') > 0.5 ? t('toneUnclear') : t('toneMixed');
+  const parts = [t('sumBase', { n: a.n, tone })];
+  if (a.praised.length) parts.push(t('sumPraise', { a: joinList(a.praised.slice(0, 2).map(x => themeName(x.id).toLowerCase())) }));
+  parts.push(a.complaints.length ? t('sumComplain', { a: joinList(a.complaints.slice(0, 3).map(x => themeName(x.id).toLowerCase())) }) : t('sumNoComplain'));
+  const real = a.flags.filter(f => f.id !== 'small').length;
+  parts.push(real === 0 ? t('sumNoFlags') : real === 1 ? t('sumFlag1') : t('sumFlags', { k: real }));
+  return parts.join(' ');
+}
+
+function sourceInfo() {
+  if (state.source.type === 'demo') return { demo: true, text: t('srcDemo') };
+  return { demo: false, text: t('srcManual', { n: state.result ? state.result.n : 0 }) };
+}
+
+function productPanel() {
+  const d = state.source.type === 'demo' ? DEMOS.find(x => x.id === state.source.id) : null;
+  const name = d && state.detailsFromDemo ? d.name[lang] : state.details.product || (d ? d.name[lang] : t('untitled'));
+  const src = sourceInfo();
+  const when = state.at ? state.at.toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }) : '';
+  return `<div class="panel span-6">
+    <div class="product-panel">
+      <div class="thumb">${d ? SVG[d.id] : SVG.generic}</div>
+      <div style="min-width:0">
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.35rem">${src.demo ? `<span class="pill pill-demo">${t('demoTag')}</span><span class="pill pill-soft">${t('illus')}</span>` : ''}</div>
+        <h2>${esc(name)}</h2>
+        <div class="product-meta">
+          ${d ? `<span>${esc(d.cat[lang])}</span><span>${t('price')}: ${d.price} (${t('priceIllus')})</span>` : ''}
+          ${state.url ? `<span>${t('linkLbl')}: <a href="${esc(state.url)}" target="_blank" rel="noopener noreferrer">${esc(short(state.url, 60))}</a></span>` : `<span>${t('notLinked')}</span>`}
+        </div>
+      </div>
+      <div class="product-actions">
+        <button class="btn btn-ghost btn-sm" type="button" id="act-save">${ICON.save}${t('save')}</button>
+        <button class="btn btn-ghost btn-sm" type="button" id="act-copy">${ICON.copy}${t('copy')}</button>
+      </div>
+    </div>
+    <div class="source-bar" style="margin-top:1rem;padding-top:.9rem;border-top:1px solid var(--line-2)">
+      <span><b>${t('sourceLbl')}:</b> ${esc(src.text)}</span>
+      <span><b>${t('analysedLbl')}:</b> ${esc(when)}</span>
+      <span><b>${t('methodLbl')}:</b> ${t('method')}</span>
+    </div>
+  </div>`;
+}
+
+function overviewPanel(a) {
+  const max = Math.max(1, ...a.dist.map(d => d.c));
+  return `<div class="panel span-3">
+    <div class="panel-head"><h2>${t('overviewT')}</h2></div>
+    <div class="stat-row">
+      <div class="stat"><div class="v">${a.n}</div><div class="k">${t('total')}</div></div>
+      <div class="stat"><div class="v">${a.avg != null ? a.avg.toFixed(1) + '★' : '–'}</div><div class="k">${t('avgRating')}</div></div>
+      <div class="stat"><div class="v">${a.words}</div><div class="k">${t('avgWords')}</div></div>
+    </div>
+    ${a.rated ? `<div class="rating-bars">${a.dist.map(d => `<div class="r"><span>${d.s}★</span><div class="track"><span style="width:${d.c / max * 100}%"></span></div><span>${d.c}</span></div>`).join('')}</div>
+      <p class="help" style="margin-top:.7rem">${t('ratingSrc')}</p>` : `<p class="empty-note" style="margin-top:1rem">${t('noRatings')}</p>`}
+    <p class="help">${t('langMix', { vi: a.vi, en: a.en })}</p>
+  </div>`;
+}
+
+function sentimentPanel(a) {
+  const segs = ['positive', 'mixed', 'negative', 'unclear'], cls = { positive: 'p', mixed: 'm', negative: 'n', unclear: 'u' };
+  return `<div class="panel span-3">
+    <div class="panel-head"><h2>${t('sentimentT')}</h2><span class="panel-sub">${t('sentimentSub')}</span></div>
+    <div class="bar bar-lg" role="img" aria-label="${segs.map(s => `${t(s)} ${a.counts[s]}`).join(', ')}">${segs.filter(s => a.counts[s]).map(s => `<span class="${cls[s]}" style="width:${pct(a.counts[s], a.n)}%"></span>`).join('')}</div>
+    <div class="sent-rows">${segs.map(s => `<div class="r"><span><i class="dot" style="background:${{ positive: 'var(--pos)', mixed: '#E29A2D', negative: 'var(--neg)', unclear: '#CFC6C9' }[s]}"></i>${t(s)}</span><div class="track"><span style="width:${pct(a.counts[s], a.n)}%;background:${{ positive: 'var(--pos)', mixed: '#E29A2D', negative: 'var(--neg)', unclear: '#CFC6C9' }[s]}"></span></div><span class="n">${a.counts[s]} · ${pct(a.counts[s], a.n)}%</span></div>`).join('')}</div>
+  </div>`;
+}
+
+function themesPanel(a) {
+  const col = (list, kind) => {
+    if (!list.length) return `<p class="empty-note">${t('noThemes')}</p>`;
+    const max = Math.max(...list.map(x => x[kind].length));
+    return `<div class="theme-list">${list.slice(0, 5).map(x => `<div class="theme-item"><span>${themeName(x.id)}</span><span class="c">${t('mentions', { k: x[kind].length })}</span><div class="track ${kind}"><span style="width:${x[kind].length / max * 100}%"></span></div></div>`).join('')}</div>`;
+  };
+  return `<div class="panel span-3">
+    <div class="panel-head"><h2>${t('themesT')}</h2></div>
+    <div class="theme-cols">
+      <div><h3><span class="chip chip-pos">+</span>${t('praisedT')}</h3>${col(a.praised, 'pos')}</div>
+      <div><h3><span class="chip chip-neg">−</span>${t('criticisedT')}</h3>${col(a.complaints, 'neg')}</div>
+    </div>
+  </div>`;
+}
+
+function complaintsPanel(a) {
+  return `<div class="panel span-3">
+    <div class="panel-head"><h2>${t('complaintsT')}</h2></div>
+    ${a.complaints.length ? `<div class="complaints">${a.complaints.slice(0, 3).map(c => `<div class="complaint"><div class="h">${themeName(c.id)}<span>${t('mentions', { k: c.neg.length })}</span></div>${c.neg.slice(0, 2).map(i => `<p class="quote">“${esc(short(a.reviews[i].text, 110))}”</p>`).join('')}</div>`).join('')}</div>` : `<p class="empty-note">${t('noComplaints')}</p>`}
+  </div>`;
+}
+
+function flagsPanel(a) {
+  const body = !a.flags.length ? `<div class="no-flags">${ICON.check}<span>${t('noFlags')}</span></div>` :
+    `<div class="flags">${a.flags.map(f => {
+      const ev = f.evidence.slice(0, 3);
+      return `<article class="flag">
+        <div class="flag-top">${ICON.flag}<h3>${t(f.id + 'T', f.vars)}</h3><span class="pill lvl ${f.level === 'high' ? 'chip-flag' : 'chip-unc'}">${t(f.level === 'high' ? 'levelHigh' : 'levelLow')}</span></div>
+        <p>${t(f.id + 'D')}</p>
+        ${ev.length ? `<div class="ev">${ev.map(i => `<p class="quote">${refOf(a.reviews[i])} “${esc(short(a.reviews[i].text, 110))}”</p>`).join('')}${f.evidence.length > 3 ? `<span class="flag-note">${t('moreEv', { k: f.evidence.length - 3 })}</span>` : ''}</div>` : ''}
+        <p class="other">${t('otherExpl')}${t(f.id + 'O')}</p>
+      </article>`;
+    }).join('')}</div>`;
+  return `<div class="panel span-6">
+    <div class="panel-head"><h2>${t('flagsT')}</h2><span class="panel-sub">${t('flagsSub')}</span></div>
+    ${body}
+  </div>`;
+}
+
+function sellerPanel(a) {
+  const d = state.details, srcLbl = state.source.type === 'demo' && state.detailsFromDemo ? t('fromDemo') : t('fromUser');
+  const row = (k, v, note, src) => `<div class="seller-row"><span class="k">${k}${v && src ? `<span class="src">${src}</span>` : ''}</span><span class="v ${v ? '' : 'na'}">${v ? esc(v) : t('notAvail')}</span><span class="note">${note}</span></div>`;
+  const anyDetail = d.shop || d.rating || d.sold || d.since || d.response;
+  const s = a.service;
+  return `<div class="panel span-3">
+    <div class="panel-head"><h2>${t('sellerT')}</h2><span class="panel-sub">${t('sellerSub')}</span></div>
+    <div class="seller-rows">
+      ${anyDetail ? '' : `<p class="empty-note" style="padding:.4rem 0 .6rem">${t('nEmpty')}</p>`}
+      ${d.shop ? row(t('sShop'), d.shop, '', srcLbl) : ''}
+      ${row(t('sRating'), d.rating ? d.rating + ' / 5' : '', t('nRating'), srcLbl)}
+      ${row(t('sSold'), d.sold, t('nSold'), srcLbl)}
+      ${row(t('sSince'), d.since, t('nSince'), srcLbl)}
+      ${row(t('sResponse'), d.response, t('nResponse'), srcLbl)}
+      ${row(t('sService'), String(s.pos.length + s.neg.length), t('nService', { p: s.pos.length, n: s.neg.length }), t('fromReviews'))}
+      ${row(t('sNoReply'), String(a.noReply.length), t('nNoReply'), t('fromReviews'))}
+      ${row(t('sVerified'), '', t('nVerified'), '')}
+    </div>
+  </div>`;
+}
+
+function excerptsPanel(a) {
+  const tabs = ['all', 'positive', 'mixed', 'negative', 'flagged'];
+  const list = a.reviews.filter(r => state.filter === 'all' ? true : state.filter === 'flagged' ? r.flags.size > 0 : r.label === state.filter);
+  return `<div class="panel span-3">
+    <div class="panel-head"><h2>${t('excerptsT')}</h2></div>
+    <div class="tabs" role="group" aria-label="${t('excerptsT')}">${tabs.map(k => {
+      const c = k === 'all' ? a.n : k === 'flagged' ? a.reviews.filter(r => r.flags.size).length : a.counts[k];
+      return `<button type="button" data-filter="${k}" aria-pressed="${state.filter === k}">${t(k === 'flagged' ? 'flagged' : k)} ${c}</button>`;
+    }).join('')}</div>
+    <div class="key"><span><mark class="hp">abc</mark> ${t('keyPos')}</span><span><mark class="hn">abc</mark> ${t('keyNeg')}</span></div>
+    <div class="review-list">${list.length ? list.map(r => `
+      <article class="review">
+        <div class="review-top">${r.rating ? `<span class="stars" aria-label="${r.rating}/5">${stars(r.rating)}</span>` : ''}<span class="chip ${LABEL_CHIP[r.label]}">${t(r.label)}</span>${[...r.flags].map(f => `<span class="chip chip-flag">${t(FLAG_NAMES[f])}</span>`).join('')}<span class="idx">${refOf(r)}</span></div>
+        <p>${highlight(r)}</p>
+      </article>`).join('') : `<p class="empty-note">${t('noneInFilter')}</p>`}</div>
+  </div>`;
+}
+
+function noticePanel(kind) {
+  const nd = kind === 'noData';
+  return `<div class="panel notice">
+    <span class="ic">${nd ? ICON.link : ICON.paste}</span>
+    <h2>${t(nd ? 'noticeNoDataT' : 'noticeEmptyT')}</h2>
+    <p>${t(nd ? 'noticeNoDataD' : 'noticeEmptyD')}</p>
+    ${nd && state.url ? `<p class="help">${t('linkLbl')}: ${esc(state.url)}</p>` : ''}
+    <div class="row"><button class="btn btn-primary btn-sm" type="button" id="notice-paste">${t('pasteBtn')}</button><button class="btn btn-ghost btn-sm" type="button" data-demo="headphones">${t('demoBtn')}</button></div>
+  </div>`;
+}
+
+function renderMain() {
+  const main = $('#dash-main');
+  if (!state.result) {
+    main.innerHTML = noticePanel(state.notice || 'empty');
+    const p = $('#notice-paste'); if (p) p.addEventListener('click', () => $('#dash-reviews').focus());
+    return;
+  }
+  const a = state.result;
+  main.innerHTML = `<div class="results">
+    ${productPanel()}
+    <div class="panel span-6 summary-panel">
+      <div class="panel-head"><h2>${t('summaryT')}</h2><span class="ai-badge">${t('summaryBadge')}</span></div>
+      <p class="lead">${esc(summaryText(a))}</p>
+      <p class="basis">${t('summaryBasis', { n: a.n })}</p>
+    </div>
+    ${overviewPanel(a)}
+    ${sentimentPanel(a)}
+    ${themesPanel(a)}
+    ${complaintsPanel(a)}
+    ${flagsPanel(a)}
+    ${sellerPanel(a)}
+    ${excerptsPanel(a)}
+  </div>`;
+  $('#act-save').addEventListener('click', saveReport);
+  $('#act-copy').addEventListener('click', copyReport);
+  $$('[data-filter]', main).forEach(b => b.addEventListener('click', () => { state.filter = b.dataset.filter; renderMain(); const el = $('[data-filter="' + state.filter + '"]'); if (el) el.focus(); }));
+}
+
+/* ---------- Report text, save, copy ---------- */
+function reportText() {
+  const a = state.result; if (!a) return '';
+  const d = state.source.type === 'demo' ? DEMOS.find(x => x.id === state.source.id) : null;
+  const L = [];
+  L.push(`${t('reportHead')}: ${state.details.product || (d ? d.name[lang] : t('untitled'))}`);
+  L.push(`${t('sourceLbl')}: ${sourceInfo().text}`);
+  if (state.url) L.push(`${t('linkLbl')}: ${state.url}`);
+  L.push(`${t('analysedLbl')}: ${state.at.toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-GB')}`);
+  L.push('', `${t('summaryT')}: ${summaryText(a)}`, '');
+  L.push(`${t('sentimentT')}: ` + ['positive', 'mixed', 'negative', 'unclear'].map(s => `${t(s)} ${a.counts[s]} (${pct(a.counts[s], a.n)}%)`).join(', '));
+  if (a.complaints.length) L.push(`${t('complaintsT')}: ` + a.complaints.map(c => `${themeName(c.id)} (${c.neg.length})`).join(', '));
+  L.push('', `${t('flagsT')}:`);
+  if (!a.flags.length) L.push(`- ${t('noFlags')}`);
+  a.flags.forEach(f => L.push(`- ${t(f.id + 'T', f.vars)}. ${t(f.id + 'D')}` + (f.evidence.length ? ` (#${f.evidence.map(i => i + 1).join(', #')})` : '')));
+  L.push('', t('reportWarn'));
+  return L.join('\n');
+}
+function copyReport() {
+  const text = reportText();
+  const fallback = () => {
+    const ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+    ta.remove(); toast(ok ? t('copied') : t('copyFail'));
+  };
+  try { navigator.clipboard.writeText(text).then(() => toast(t('copied')), fallback); } catch (e) { fallback(); }
+}
+function saveReport() {
+  const list = store.get('trustlens.saved', []);
+  const d = state.source.type === 'demo' ? DEMOS.find(x => x.id === state.source.id) : null;
+  list.unshift({ id: Date.now().toString(36), title: state.details.product || (d ? d.name.en : 'Untitled'), at: state.at.toISOString(), source: state.source, url: state.url, reviews: $('#dash-reviews').value, details: state.details, fromDemo: state.detailsFromDemo });
+  toast(store.set('trustlens.saved', list.slice(0, 20)) ? t('saved') : t('saveFail'));
+  renderSaved();
+}
+function renderSaved() {
+  const list = store.get('trustlens.saved', []);
+  $('#saved-list').innerHTML = list.length ? list.map(s => `<div class="saved-item">
+      <button class="open" type="button" data-open="${esc(s.id)}"><span class="t">${esc(s.title)}</span><span class="d">${esc(new Date(s.at).toLocaleString(lang === 'vi' ? 'vi-VN' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }))}</span></button>
+      <button class="del" type="button" data-del="${esc(s.id)}" aria-label="${t('del')}">✕</button>
+    </div>`).join('') : `<p class="empty-note">${t('savedEmpty')}</p>`;
+}
+$('#saved-list').addEventListener('click', e => {
+  const del = e.target.closest('[data-del]'), open = e.target.closest('[data-open]');
+  const list = store.get('trustlens.saved', []);
+  if (del) { store.set('trustlens.saved', list.filter(s => s.id !== del.dataset.del)); renderSaved(); return; }
+  if (open) {
+    const s = list.find(x => x.id === open.dataset.open); if (!s) return;
+    $('#dash-url').value = s.url || ''; $('#dash-reviews').value = s.reviews; setDetails(s.details || {});
+    state.source = s.source || { type: 'manual' }; state.detailsFromDemo = !!s.fromDemo; state.filter = 'all';
+    run(); state.at = new Date(s.at); renderMain();
+  }
+});
+
+/* ---------- Header behaviour ---------- */
+$('#menu-btn').addEventListener('click', e => { const open = $('#nav').classList.toggle('open'); e.currentTarget.setAttribute('aria-expanded', String(open)); });
+$$('.lang button').forEach(b => b.addEventListener('click', () => { lang = b.dataset.lang; store.set('trustlens.lang', lang); applyLang(); }));
+const header = $('.site-header');
+addEventListener('scroll', () => header.classList.toggle('scrolled', scrollY > 8), { passive: true });
+
+/* ---------- Boot ---------- */
+$$('[data-product-svg]').forEach(el => { el.innerHTML = SVG[el.dataset.productSvg]; });
+loadDemo('headphones');
+applyLang();
+if (location.hash === '#dashboard') showView('dashboard');
+else if (location.hash && document.getElementById(location.hash.slice(1))) showView(location.hash.slice(1));
+</script>
+<script src="retrieve.js"></script>
+<script src="analysis.js"></script>
+<script src="i18n-extra.js"></script>
+<script src="live.js"></script>
+<script src="motion.js"></script>
+<script src="liquid-hero.js"></script>
+<script>
+  // Liquid particle artwork; the static image stays if WebGL2 is unavailable or motion is reduced.
+  if (window.TL_liquidHero) TL_liquidHero.mount({ hero: document.getElementById('home'), art: document.querySelector('.hero-art'), img: document.querySelector('.hero-art-img'), background: '#050505', imageBackground: '#050505' });
+</script>
+</body>
+</html>
