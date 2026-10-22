@@ -76,8 +76,11 @@
       if (res.status === 202 && data.pending) { r.resume = data.resume; r.stopReason = 'provider_processing'; paint(); await wait(3000); continue; }
       const incoming = Array.isArray(data.reviews) ? data.reviews : [];
       if (!res.ok && !incoming.length) {
-        r.errorCode = data.error || 'upstream_error';
-        r.stopReason = data.stopReason || data.error || 'upstream_error';
+        // Current API sends a code (e.g. provider_not_configured); an older deployment sends a sentence.
+        const code = typeof data.error === 'string' && /^[a-z_]{1,40}$/.test(data.error) ? data.error : null;
+        const legacy = !code && res.status === 503 && /provider is configured|not configured/i.test(String(data.error || '')) ? 'provider_not_configured' : null;
+        r.errorCode = code || legacy || 'upstream_error';
+        r.stopReason = data.stopReason || code || legacy || 'upstream_error';
         if (data.code) r.errorDetail = data.code;
         break;
       }

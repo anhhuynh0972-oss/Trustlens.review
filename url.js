@@ -71,6 +71,8 @@
       /^\/shop\/pdp\/(?:[^/]+\/)?(\d{10,20})$/,
       /^\/view\/product\/(\d{10,20})$/,
       /^\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?shop\/(?:[a-z]{2}\/)?pdp\/(?:[^/]+\/)?(\d{10,20})$/i,
+      // regional shop links, e.g. shop.tiktok.com/vn/pdp/<slug>/<id> or shop.tiktok.com/pdp/<id>
+      /^\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?pdp\/(?:[^/]+\/)?(\d{10,20})$/i,
       /^\/product\/(\d{10,20})$/
     ];
     for (const re of patterns) { const m = path.match(re); if (m) return m[1]; }

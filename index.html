@@ -61,7 +61,7 @@ img, svg { max-width: 100%; }
 .btn-sm { padding: .5rem .9rem; font-size: .85rem; }
 .btn-link { background: none; border: 0; padding: 0; color: var(--red-ink); font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; font-size: .9rem; }
 .field-label { display: block; font-size: var(--step--1); font-weight: 600; color: var(--ink-2); margin-bottom: .4rem; }
-.input, .textarea { width: 100%; border: 1px solid var(--line-2); background: var(--white); border-radius: var(--r-md); padding: .8rem 1rem; font-size: .95rem; transition: border-color .15s ease, box-shadow .15s ease; }
+.input, .textarea { width: 100%; border: 1px solid var(--line-2); background: var(--white); color: var(--ink); border-radius: var(--r-md); padding: .8rem 1rem; font-size: .95rem; transition: border-color .15s ease, box-shadow .15s ease; }
 .input:focus, .textarea:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 4px rgba(245,45,70,.14); }
 .textarea { resize: vertical; min-height: 140px; line-height: 1.5; }
 .field-error { color: var(--neg); font-size: var(--step--1); font-weight: 600; margin-top: .45rem; }
@@ -114,7 +114,9 @@ section { scroll-margin-top: 84px; }
 .url-row { display: flex; gap: .5rem; background: var(--white); border: 1px solid var(--line); border-radius: 999px; padding: 6px; box-shadow: var(--shadow); }
 .url-row:focus-within { border-color: var(--red); box-shadow: 0 0 0 4px rgba(245,45,70,.12), var(--shadow); }
 .url-row .icon { flex: none; display: grid; place-items: center; width: 40px; color: var(--ink-3); }
-.url-row input { flex: 1; min-width: 0; border: 0; outline: none; background: none; font-size: .95rem; }
+.url-row input { flex: 1; min-width: 0; border: 0; outline: none; background: none; font-size: .95rem; color: var(--ink); }
+.url-row input::placeholder { color: var(--ink-3); opacity: 1; }
+.url-row input::selection, .input::selection, .textarea::selection { background: rgba(245,45,70,.22); color: var(--ink); }
 .hero-alt { margin-top: .9rem; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem 1rem; }
 .hero-note { font-size: var(--step--1); color: var(--ink-3); }
 .hero-manual { margin-top: 1rem; display: grid; gap: .6rem; }
